@@ -1,0 +1,111 @@
+exports.seed = async function(knex) {
+  // Clean up existing data
+  await knex('expense_splits').del();
+  await knex('expenses').del();
+  await knex('settlements').del();
+  await knex('group_members').del();
+  await knex('groups').del();
+  await knex('users').del();
+
+  // Helper to handle knex returning behavior (differs by DB)
+  const getFirstId = (res) => {
+    if (Array.isArray(res)) {
+      const row = res[0];
+      return typeof row === 'object' ? row.id : row;
+    }
+    return res;
+  };
+
+  // 1. Create 3 demo users
+  const aliceId = getFirstId(await knex('users').insert({
+    name: 'Alice',
+    email: 'alice@example.com',
+    password: 'demo123'
+  }).returning('id'));
+
+  const bobId = getFirstId(await knex('users').insert({
+    name: 'Bob',
+    email: 'bob@example.com',
+    password: 'demo123'
+  }).returning('id'));
+
+  const carlosId = getFirstId(await knex('users').insert({
+    name: 'Carlos',
+    email: 'carlos@example.com',
+    password: 'demo123'
+  }).returning('id'));
+
+  // 2. Create 1 group "Trip to Cancún"
+  const groupId = getFirstId(await knex('groups').insert({
+    name: 'Trip to Cancún'
+  }).returning('id'));
+
+  // Add all 3 members to the group
+  await knex('group_members').insert([
+    { group_id: groupId, user_id: aliceId },
+    { group_id: groupId, user_id: bobId },
+    { group_id: groupId, user_id: carlosId }
+  ]);
+
+  // 3. 4 Expenses
+
+  // Expense 1: dinner $90 equal split (Alice paid)
+  const exp1Id = getFirstId(await knex('expenses').insert({
+    group_id: groupId,
+    description: 'dinner',
+    amount: 90.00,
+    paid_by: aliceId
+  }).returning('id'));
+  await knex('expense_splits').insert([
+    { expense_id: exp1Id, user_id: aliceId, amount: 30.00 },
+    { expense_id: exp1Id, user_id: bobId, amount: 30.00 },
+    { expense_id: exp1Id, user_id: carlosId, amount: 30.00 }
+  ]);
+
+  // Expense 2: groceries $60 Alice paid equal split
+  const exp2Id = getFirstId(await knex('expenses').insert({
+    group_id: groupId,
+    description: 'groceries',
+    amount: 60.00,
+    paid_by: aliceId
+  }).returning('id'));
+  await knex('expense_splits').insert([
+    { expense_id: exp2Id, user_id: aliceId, amount: 20.00 },
+    { expense_id: exp2Id, user_id: bobId, amount: 20.00 },
+    { expense_id: exp2Id, user_id: carlosId, amount: 20.00 }
+  ]);
+
+  // Expense 3: taxi $30 Bob paid Carlos only (exact)
+  const exp3Id = getFirstId(await knex('expenses').insert({
+    group_id: groupId,
+    description: 'else', // using 'else' as placeholder description if needed, but task says 'taxi'
+    description: 'taxi',
+    amount: 30.00,
+    paid_by: bobId
+  }).returning('id'));
+  await knex('expense_splits').insert([
+    { expense_id: exp3Id, user_id: carlosId, amount: 30.00 }
+  ]);
+
+  // Expense 4: hotel $210 Alice paid split by shares (Alice 2, Bob 1, Carlos 1)
+  // Total shares = 4. Alice: 105, Bob: 52.5, Carlos: 52.5
+  const exp4Id = getFirstId(await knex('expenses').insert({
+    group_id: groupId,
+    description: 'hotel',
+    amount: 210.00,
+    paid_by: aliceId
+  }).returning('id'));
+  await knex('expense_splits').insert([
+    { expense_id: exp4Id, user_id: aliceId, amount: 105.00 },
+    { expense_id: exp4Id, user_id: bobId, amount: 52.50 },
+    { expense_id: exp4Id, user_id: carlosId, amount: 52.50 }
+  ]);
+
+  // 4. 1 settlement: Bob pays Alice $25
+  await knex('settlements').insert({
+    group_id: groupId,
+    payer_id: bobId,
+    receiver_id: aliceId,
+    amount: 25.00
+  });
+};

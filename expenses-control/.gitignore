@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.vite/
+*.db
+*.sqlite
+.env
+.DS_Store
