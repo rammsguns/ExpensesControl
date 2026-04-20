@@ -2,12 +2,30 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
+const { requireGroupMember } = require('../middleware/auth');
 
 router.use(auth);
 
 router.post('/', async (req, res) => {
   const { groupId, fromUserId, toUserId, amount } = req.body;
+
+  if (!groupId || !fromUserId || !toUserId || amount === undefined) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  if (typeof amount !== 'number' || amount <= 0) {
+    return res.status(400).json({ error: 'Amount must be a positive number' });
+  }
+
   try {
+    // Verify user is a member of the group
+    const membership = await db('group_members')
+      .where({ group_id: groupId, user_id: req.user.id })
+      .first();
+    if (!membership) {
+      return res.status(403).json({ error: 'Forbidden: Not a member of this group' });
+    }
+
     const [id] = await db('settlements').insert({
       group_id: groupId,
       from_user_id: fromUserId,
@@ -16,11 +34,12 @@ router.post('/', async (req, res) => {
     });
     res.status(201).json({ id, message: 'Settlement recorded' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Create settlement error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/group/:groupId', async (req, res) => {
+router.get('/group/:groupId', requireGroupMember, async (req, res) => {
   try {
     const settlements = await db('settlements')
       .where({ group_id: req.params.groupId })
@@ -29,16 +48,16 @@ router.get('/group/:groupId', async (req, res) => {
       .select('settlements.*', 'from_user.name as from_name', 'to_user.name as to_name');
     res.json(settlements);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get settlements error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/group/:groupId/plan', async (req, res) => {
+router.get('/group/:groupId/plan', requireGroupMember, async (req, res) => {
   try {
     const settlements = await db('settlements').where({ group_id: req.params.groupId });
     
-    // Debt simplification algorithm (simplified version)
-    // 1. Calculate net balances for everyone in the group
+    // Debt simplification algorithm
     const members = await db('group_members')
       .where({ group_id: req.params.groupId })
       .select('user_id');
@@ -50,21 +69,19 @@ router.get('/group/:groupId/plan', async (req, res) => {
     const expenses = await db('expenses').where({ group_id: req.params.groupId });
     for (const exp of expenses) {
       const splits = await db('expense_splits').where({ expense_id: exp.id });
-      // Payer gets credit
       netBalances[exp.paid_by] += parseFloat(exp.amount);
-      // Debtors get debited
       for (const split of splits) {
         netBalances[split.user_id] -= parseFloat(split.amount);
       }
     }
 
-    // Add settlements (from pays to: from gets +balance credit, to gets -balance debit)
+    // Add settlements
     for (const set of settlements) {
       netBalances[set.from_user_id] += parseFloat(set.amount);
       netBalances[set.to_user_id] -= parseFloat(set.amount);
     }
 
-    // 2. Create a list of creditors and debtors
+    // Create creditors and debtors lists
     const creditors = [];
     const debtors = [];
     for (const userId in netBalances) {
@@ -72,7 +89,6 @@ router.get('/group/:groupId/plan', async (req, res) => {
       else if (netBalances[userId] < -0.01) debtors.push({ id: userId, amount: Math.abs(netBalances[userId]) });
     }
 
-    // 3. Match them up
     // Get user names
     const userMap = {};
     const allUsers = await db('users').select('id', 'name');
@@ -93,7 +109,8 @@ router.get('/group/:groupId/plan', async (req, res) => {
 
     res.json(plan);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get settlement plan error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
