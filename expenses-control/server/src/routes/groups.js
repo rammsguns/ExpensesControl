@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
+const { requireGroupMember, requireGroupCreator } = require('../middleware/auth');
 
 router.use(auth);
 
@@ -13,7 +14,8 @@ router.post('/', async (req, res) => {
     await db('group_members').insert({ group_id: groupId, user_id: creatorId });
     res.status(201).json({ id: groupId, name, description });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Create group error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -25,11 +27,12 @@ router.get('/', async (req, res) => {
       .select('groups.*');
     res.json(groups);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get groups error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', requireGroupMember, async (req, res) => {
   try {
     const group = await db('groups').where({ id: req.params.id }).first();
     if (!group) return res.status(404).json({ error: 'Group not found' });
@@ -41,11 +44,12 @@ router.get('/:id', async (req, res) => {
 
     res.json({ ...group, members });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get group error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.post('/:id/members', async (req, res) => {
+router.post('/:id/members', requireGroupMember, async (req, res) => {
   const { email } = req.body;
   const groupId = req.params.id;
   try {
@@ -61,7 +65,8 @@ router.post('/:id/members', async (req, res) => {
     await db('group_members').insert({ group_id: groupId, user_id: member.id });
     res.status(201).json({ message: 'Member added', member: { id: member.id, name: member.name, email: member.email } });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Add member error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
@@ -84,16 +89,24 @@ router.get('/friends/all', async (req, res) => {
 
     res.json(members);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Get friends error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 
-router.delete('/:id/members/:userId', async (req, res) => {
+router.delete('/:id/members/:userId', requireGroupCreator, async (req, res) => {
   try {
+    // Don't allow removing the creator
+    const group = await db('groups').where({ id: req.params.id }).first();
+    if (parseInt(req.params.userId) === group.created_by) {
+      return res.status(400).json({ error: 'Cannot remove the group creator' });
+    }
+
     await db('group_members').where({ group_id: req.params.id, user_id: req.params.userId }).del();
     res.json({ message: 'Member removed' });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Remove member error:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
 

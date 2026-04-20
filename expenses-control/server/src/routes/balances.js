@@ -57,8 +57,8 @@ router.get('/group/:groupId', async (req, res) => {
 
     res.json(Object.values(balances));
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Balance error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -113,8 +113,8 @@ router.get('/', async (req, res) => {
 
     res.json(Object.values(allBalances));
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: err.message });
+    console.error("Balance error:", err);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 

@@ -5,17 +5,14 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [token, setToken] = useState(() => localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
-    if (savedToken && savedUser) {
+    if (savedUser) {
       try {
         setUser(JSON.parse(savedUser));
       } catch {
-        localStorage.removeItem('token');
         localStorage.removeItem('user');
       }
     }
@@ -24,33 +21,28 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await api.post('/auth/login', { email, password });
-    const { token: newToken, user: newUser } = response.data;
-    localStorage.setItem('token', newToken);
+    const { user: newUser } = response.data;
     localStorage.setItem('user', JSON.stringify(newUser));
-    setToken(newToken);
     setUser(newUser);
     return newUser;
   };
 
   const register = async (userData) => {
     const response = await api.post('/auth/register', userData);
-    const { token: newToken, user: newUser } = response.data;
-    localStorage.setItem('token', newToken);
+    const { user: newUser } = response.data;
     localStorage.setItem('user', JSON.stringify(newUser));
-    setToken(newToken);
     setUser(newUser);
     return newUser;
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    api.post('/auth/logout').catch(() => {});
     localStorage.removeItem('user');
-    setToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   );
