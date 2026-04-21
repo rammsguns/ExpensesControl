@@ -1,6 +1,13 @@
 const bcrypt = require('bcryptjs');
 
 exports.seed = async function(knex) {
+  // Check if demo data already exists
+  const existingAlice = await knex('users').where({ email: 'alice@example.com' }).first();
+  if (existingAlice) {
+    console.log('Demo data already exists, skipping seed.');
+    return;
+  }
+
   // Clean up
   await knex('settlements').del();
   await knex('expense_splits').del();

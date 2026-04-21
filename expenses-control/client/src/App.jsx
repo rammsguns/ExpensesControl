@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupDetail from './pages/GroupDetail';
 import AddExpense from './pages/AddExpense';
+import EditExpense from './pages/EditExpense';
 import SettleUp from './pages/SettleUp';
 import Friends from './pages/Friends';
 import Activity from './pages/Activity';
@@ -41,6 +42,7 @@ function App() {
       
       <Route path="/group/:id" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
       <Route path="/add-expense/:groupId" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
+      <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
       <Route path="/settle/:groupId" element={<ProtectedRoute><SettleUp /></ProtectedRoute>} />
     </Routes>
   );

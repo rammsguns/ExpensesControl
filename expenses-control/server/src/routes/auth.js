@@ -57,11 +57,17 @@ router.post('/register', authLimiter, async (req, res) => {
     return res.status(400).json({ error: 'Missing fields' });
   }
   // Password strength validation
-  if (password.length < 8) {
-    return res.status(400).json({ error: 'Password must be at least 8 characters' });
-  }
-  if (!/[A-Z]/.test(password) || !/[a-z]/.test(password) || !/[0-9]/.test(password)) {
-    return res.status(400).json({ error: 'Password must contain uppercase, lowercase, and a number' });
+  // Password strength validation
+  const errors = [];
+  if (password.length < 10) errors.push('at least 10 characters');
+  if (!/[A-Z]/.test(password)) errors.push('an uppercase letter');
+  if (!/[a-z]/.test(password)) errors.push('a lowercase letter');
+  if (!/[0-9]/.test(password)) errors.push('a number');
+  if (!/[^A-Za-z0-9]/.test(password)) errors.push('a special character');
+  if (errors.length > 0) {
+    return res.status(400).json({ 
+      error: `Password must contain ${errors.join(', ')}` 
+    });
   }
   try {
     const hashedPassword = await bcrypt.hash(password, 12);

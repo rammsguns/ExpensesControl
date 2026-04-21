@@ -13,6 +13,22 @@ export default function Register() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [error, setError] = React.useState('');
 
+  // Password strength requirements
+  const requirements = [
+    { label: 'At least 10 characters', test: (p) => p.length >= 10 },
+    { label: 'One uppercase letter', test: (p) => /[A-Z]/.test(p) },
+    { label: 'One lowercase letter', test: (p) => /[a-z]/.test(p) },
+    { label: 'One number', test: (p) => /[0-9]/.test(p) },
+    { label: 'One special character', test: (p) => /[^A-Za-z0-9]/.test(p) },
+  ];
+
+  const metRequirements = requirements.filter((r) => r.test(password));
+  const strength = metRequirements.length;
+  const strengthColor =
+    strength <= 2 ? 'text-red-500' : strength <= 3 ? 'text-yellow-500' : strength <= 4 ? 'text-blue-500' : 'text-green-500';
+  const strengthLabel =
+    strength <= 2 ? 'Weak' : strength <= 3 ? 'Fair' : strength <= 4 ? 'Good' : 'Strong';
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
@@ -20,11 +36,14 @@ export default function Register() {
       setError('Passwords do not match');
       return;
     }
+    if (strength < requirements.length) {
+      setError('Password does not meet all requirements');
+      return;
+    }
     setLoading(true);
     try {
       await api.post('/auth/register', { name, email, password });
       // Auto-login after register
-      await api.post('/auth/login', { email, password });
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
@@ -80,7 +99,31 @@ export default function Register() {
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
-          </div >
+          </div>
+          {/* Password Strength Indicator */}
+          {password && (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-gray-600">Strength: {strengthLabel}</span>
+                <div className="flex gap-1">
+                  {requirements.map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-1.5 w-6 rounded-full ${i < strength ? strengthColor.replace('text-', 'bg-') : 'bg-gray-200'}`}
+                    />
+                  ))}
+                </div>
+              </div>
+              <ul className="space-y-1">
+                {requirements.map((req) => (
+                  <li key={req.label} className={`text-xs flex items-center gap-1.5 ${req.test(password) ? 'text-green-600' : 'text-gray-400'}`}>
+                    <span>{req.test(password) ? '✓' : '○'}</span>
+                    {req.label}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <div className="relative">
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('confirm_password')}</label>
             <input
@@ -97,11 +140,11 @@ export default function Register() {
             >
               {showPassword ? 'Hide' : 'Show'}
             </button>
-          </div >
+          </div>
           <button
             type="submit"
-            disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
+            disabled={loading || strength < requirements.length}
+            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? '...' : t('register')}
           </button>

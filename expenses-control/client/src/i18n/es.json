@@ -58,5 +58,8 @@
   "verify": "Verificar",
   "back_to_login": "Volver al login",
   "loading": "Cargando...",
+  "edit": "Editar",
+  "edit_expense": "Editar Gasto",
+  "confirm_delete_expense": "¿Estás seguro de eliminar este gasto? Esta acción no se puede deshacer.",
   "login_error": "Credenciales inválidas"
 }

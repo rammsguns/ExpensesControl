@@ -14,73 +14,74 @@ router.use(auth);
 
 const VALID_SPLIT_TYPES = ['equal', 'percentage', 'exact', 'shares'];
 
-router.post('/', async (req, res) => {
-  const { description, amount, paidBy, splitType, splits, groupId } = req.body;
-
-  // Input validation
-  if (!groupId || !description || amount === undefined || !paidBy || !splitType) {
-    return res.status(400).json({ error: 'Missing required fields' });
-  }
-
-  if (typeof amount !== 'number' || amount <= 0) {
-    return res.status(400).json({ error: 'Amount must be a positive number' });
-  }
-
-  if (!VALID_SPLIT_TYPES.includes(splitType)) {
-    return res.status(400).json({ error: 'Invalid split type. Must be: equal, percentage, exact, or shares' });
-  }
-
-  if (splitType !== 'equal' && (!Array.isArray(splits) || splits.length === 0)) {
-    return res.status(400).json({ error: 'Splits array is required for non-equal split types' });
-  }
-
-  if (splitType === 'percentage') {
-    for (const s of splits) {
-      if (typeof s.percentage !== 'number' || s.percentage < 0 || s.percentage > 100) {
-        return res.status(400).json({ error: 'Each split percentage must be between 0 and 100' });
-      }
-    }
-  }
-
-  if (splitType === 'exact') {
-    for (const s of splits) {
-      if (typeof s.amount !== 'number' || s.amount < 0) {
-        return res.status(400).json({ error: 'Each split amount must be a non-negative number' });
-      }
-    }
-  }
-
-  if (splitType === 'shares') {
-    for (const s of splits) {
-      if (typeof s.shares !== 'number' || s.shares <= 0) {
-        return res.status(400).json({ error: 'Each split share must be a positive number' });
-      }
-    }
-  }
+router.put('/:id', async (req, res) => {
+  const { description, amount, paidBy, splitType, splits } = req.body;
+  const expenseId = req.params.id;
 
   try {
-    // Verify user is a member of the group
-    const membership = await db('group_members')
-      .where({ group_id: groupId, user_id: req.user.id })
-      .first();
-    if (!membership) {
-      return res.status(403).json({ error: 'Forbidden: Not a member of this group' });
+    const expense = await db('expenses').where({ id: expenseId }).first();
+    if (!expense) return res.status(404).json({ error: 'Expense not found' });
+
+    // Verify user is the creator (paid_by === req.user.id)
+    if (expense.paid_by !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden: You are not the creator of this expense' });
     }
 
-    const isMember = await db('group_members')
-      .where({ group_id: groupId, user_id: paidBy })
-      .first();
-    if (!isMember) return res.status(403).json({ error: 'Payer must be a member of the group' });
+    // Input validation
+    if (!description || amount === undefined || !paidBy || !splitType) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
 
-    const [expenseId] = await db('expenses').insert({
-      group_id: groupId,
+    if (typeof amount !== 'number' || amount <= 0) {
+      return res.status(400).json({ error: 'Amount must be a positive number' });
+    }
+
+    if (!VALID_SPLIT_TYPES.includes(splitType)) {
+      return res.status(400).json({ error: 'Invalid split type. Must be: equal, percentage, exact, or shares' });
+    }
+
+    if (splitType !== 'equal' && (!Array.isArray(splits) || splits.length === 0)) {
+      return res.status(400).json({ error: 'Splits array is required for non-equal split types' });
+    }
+
+    // ... (Rest of validation logic)
+    if (splitType === 'percentage') {
+      for (const s of splits) {
+        if (typeof s.percentage !== 'number' || s.percentage < 0 || s.percentage > 100) {
+          return res.status(400).json({ error: 'Each split percentage must be between 0 and 100' });
+        }
+      }
+    }
+
+    if (splitType === 'exact') {
+      for (const s of splits) {
+        if (typeof s.amount !== 'number' || s.amount < 0) {
+          return res.status(400).json({ error: 'Each split amount must be a non-negative number' });
+        }
+      }
+    }
+
+    if (splitType === 'shares') {
+      for (const s of splits) {
+        if (typeof s.shares !== 'number' || s.shares <= 0) {
+          return res.status(400).json({ error: 'Each split share must be a positive number' });
+        }
+      }
+    }
+
+    // Update expense
+    await db('expenses').where({ id: expenseId }).update({
       description: sanitize(description),
       amount,
       paid_by: paidBy,
       split_type: splitType
     });
 
+    // Delete old splits and recalculate
+    await db('expense_splits').where({ expense_id: expenseId }).del();
+
     let expenseSplits = [];
+    const groupId = expense.group_id;
 
     if (splitType === 'equal') {
       const members = await db('group_members')
@@ -113,9 +114,9 @@ router.post('/', async (req, res) => {
 
     await db('expense_splits').insert(expenseSplits);
 
-    res.status(201).json({ id: expenseId, message: 'Expense created' });
+    res.json({ id: expenseId, message: 'Expense updated' });
   } catch (err) {
-    console.error('Create expense error:', err);
+    console.error('Update expense error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });
@@ -173,12 +174,9 @@ router.delete('/:id', async (req, res) => {
     const expense = await db('expenses').where({ id: req.params.id }).first();
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
 
-    // Verify membership
-    const membership = await db('group_members')
-      .where({ group_id: expense.group_id, user_id: req.user.id })
-      .first();
-    if (!membership) {
-      return res.status(403).json({ error: 'Forbidden: Not a member of this group' });
+    // Verify user is the creator (or group admin)
+    if (expense.paid_by !== req.user.id) {
+      return res.status(403).json({ error: 'Forbidden: Only the expense creator can delete' });
     }
 
     await db('expense_splits').where({ expense_id: req.params.id }).del();

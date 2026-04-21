@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import ExpenseCard from '../components/ExpenseCard';
+
+import ExpenseCard from '../components/ExpenseCard';
 
 const CATEGORY_ICONS = {
   food: { emoji: '🍽️', bg: 'bg-pink-100' },
@@ -211,49 +214,23 @@ export default function GroupDetail() {
               <div key={month} className="mb-4">
                 <h3 className="text-sm font-semibold text-gray-500 mb-2">{month}</h3>
                 <div className="space-y-2">
-                  {exps.map(exp => {
-                    const cat = guessCategory(exp.description);
-                    const icon = CATEGORY_ICONS[cat] || CATEGORY_ICONS.other;
-                    const isPayer = exp.paid_by === user?.id;
-                    const mySplit = exp.splits?.find(s => s.id === user?.id);
-                    const myShare = mySplit ? parseFloat(mySplit.share_amount || mySplit.amount) : 0;
-                    const netAmount = isPayer ? (parseFloat(exp.amount) - myShare) : -myShare;
-
-                    return (
-                      <div key={exp.id} className="bg-white rounded-xl shadow-sm border p-3 flex items-center gap-3">
-                        {/* Category icon */}
-                        <div className={`w-10 h-10 rounded-lg ${icon.bg} flex items-center justify-center text-lg flex-shrink-0`}>
-                          {icon.emoji}
-                        </div>
-                        {/* Details */}
-                        <div className="flex-1 min-w-0">
-                          <p className="font-medium text-gray-800 text-sm truncate">{exp.description}</p>
-                          <p className="text-xs text-gray-500">
-                            {isPayer
-                              ? (language === 'es' ? 'Tú pagaste' : 'You paid')
-                              : `${exp.paid_by_name || 'Someone'} ${language === 'es' ? 'pagó' : 'paid'}`
-                            } MX$ {parseFloat(exp.amount).toFixed(2)}
-                          </p>
-                        </div>
-                        {/* Amount */}
-                        <div className="text-right flex-shrink-0">
-                          {netAmount > 0.01 ? (
-                            <>
-                              <p className="text-xs text-gray-400">{language === 'es' ? 'tú prestaste' : 'you lent'}</p>
-                              <p className="text-sm font-bold text-emerald-600">MX$ {netAmount.toFixed(2)}</p>
-                            </>
-                          ) : netAmount < -0.01 ? (
-                            <>
-                              <p className="text-xs text-gray-400">{language === 'es' ? 'tú pediste' : 'you borrowed'}</p>
-                              <p className="text-sm font-bold text-red-500">MX$ {Math.abs(netAmount).toFixed(2)}</p>
-                            </>
-                          ) : (
-                            <p className="text-xs text-gray-400">✓</p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+                  {exps.map(exp => (
+                    <ExpenseCard
+                      key={exp.id}
+                      expense={exp}
+                      currentUser={user}
+                      onEdit={(expense) => navigate(`/edit-expense/${id}/${expense.id}`)}
+                      onDelete={async (expenseId) => {
+                        try {
+                          await api.delete(`/expenses/${expenseId}`);
+                          qc.invalidateQueries({ queryKey: ['expenses', id] });
+                          qc.invalidateQueries({ queryKey: ['balances', id] });
+                        } catch (err) {
+                          alert(err.response?.data?.error || 'Failed to delete expense');
+                        }
+                      }}
+                    />
+                  ))}
                 </div>
               </div>
             ))

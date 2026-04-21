@@ -58,5 +58,8 @@
   "verify": "Verify",
   "back_to_login": "Back to login",
   "loading": "Loading...",
+  "edit": "Edit",
+  "edit_expense": "Edit Expense",
+  "confirm_delete_expense": "Are you sure you want to delete this expense? This action cannot be undone.",
   "login_error": "Invalid credentials"
 }
