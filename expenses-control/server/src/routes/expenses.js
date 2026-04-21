@@ -14,6 +14,82 @@ router.use(auth);
 
 const VALID_SPLIT_TYPES = ['equal', 'percentage', 'exact', 'shares'];
 
+// POST / - Create new expense
+router.post('/', requireGroupMember, async (req, res) => {
+  const { groupId, description, amount, paidBy, splitType, splits } = req.body;
+
+  try {
+    // Validate input
+    if (!groupId || !description || !amount || !paidBy || !splitType) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    if (!VALID_SPLIT_TYPES.includes(splitType)) {
+      return res.status(400).json({ error: 'Invalid split type' });
+    }
+
+    const parsedAmount = parseFloat(amount);
+    if (isNaN(parsedAmount) || parsedAmount <= 0) {
+      return res.status(400).json({ error: 'Amount must be positive' });
+    }
+
+    // Verify user is a member of the group
+    const membership = await db('group_members')
+      .where({ group_id: groupId, user_id: req.user.id })
+      .first();
+    if (!membership) {
+      return res.status(403).json({ error: 'Not a member of this group' });
+    }
+
+    // Create expense
+    const [expenseId] = await db('expenses').insert({
+      group_id: groupId,
+      description: sanitize(description),
+      amount: parsedAmount,
+      paid_by: paidBy,
+      split_type: splitType
+    });
+
+    // Create splits
+    let expenseSplits = [];
+    const members = await db('group_members')
+      .where({ group_id: groupId })
+      .join('users', 'group_members.user_id', 'users.id')
+      .select('users.id');
+
+    if (splitType === 'equal') {
+      const share = parsedAmount / members.length;
+      expenseSplits = members.map(m => ({ expense_id: expenseId, user_id: m.id, amount: share }));
+    } else if (splitType === 'percentage') {
+      expenseSplits = splits.map(s => ({
+        expense_id: expenseId,
+        user_id: s.userId,
+        amount: (s.percentage / 100) * parsedAmount
+      }));
+    } else if (splitType === 'exact') {
+      expenseSplits = splits.map(s => ({
+        expense_id: expenseId,
+        user_id: s.userId,
+        amount: s.amount
+      }));
+    } else if (splitType === 'shares') {
+      const totalShares = splits.reduce((sum, s) => sum + s.shares, 0);
+      expenseSplits = splits.map(s => ({
+        expense_id: expenseId,
+        user_id: s.userId,
+        amount: (s.shares / totalShares) * parsedAmount
+      }));
+    }
+
+    await db('expense_splits').insert(expenseSplits);
+
+    res.status(201).json({ id: expenseId, message: 'Expense created' });
+  } catch (err) {
+    console.error('Create expense error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 router.put('/:id', async (req, res) => {
   const { description, amount, paidBy, paid_by, splitType, splits } = req.body;
   const expenseId = req.params.id;
