@@ -249,7 +249,7 @@ export default function SearchExpenses() {
                         onClick={() => navigate(`/group/${exp.group_id}`)}
                         className="bg-white rounded-xl shadow-sm border p-3 flex items-center gap-3 cursor-pointer hover:shadow-md transition"
                       >
-                        <div className={`w-10 h-10 rounded-lg ${icon.bg} flex items-center justify-center text-lg flex-shrink-0`}>
+                        <div className={"w-10 h-10 rounded-lg " + icon.bg + " flex items-center justify-center text-lg flex-shrink-0"}>
                           {icon.emoji}
                         </div>
                         <div className="flex-1 min-w-0">
