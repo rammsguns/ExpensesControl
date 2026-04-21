@@ -42,7 +42,6 @@ function App() {
       <Route path="/add-expense/:groupId" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
       <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
       <Route path="/settle/:groupId" element={<ProtectedRoute><SettleUp /></ProtectedRoute>} />
-      <Route path="/search" element={<ProtectedRoute><SearchExpenses /></ProtectedRoute>} />
     </Routes>
   );
 }
