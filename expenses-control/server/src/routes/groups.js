@@ -51,7 +51,7 @@ router.get('/:id', requireGroupMember, async (req, res) => {
     const members = await db('users')
       .join('group_members', 'users.id', 'group_members.user_id')
       .where('group_members.group_id', req.params.id)
-      .select('users.id', 'users.name', 'users.email');
+      .select('users.id', 'users.name');
 
     res.json({ ...group, members });
   } catch (err) {
@@ -74,7 +74,7 @@ router.post('/:id/members', requireGroupMember, async (req, res) => {
     if (existing) return res.status(409).json({ error: 'Already a member' });
 
     await db('group_members').insert({ group_id: groupId, user_id: member.id });
-    res.status(201).json({ message: 'Member added', member: { id: member.id, name: member.name, email: member.email } });
+    res.status(201).json({ message: 'Member added', member: { id: member.id, name: member.name } });
   } catch (err) {
     console.error('Add member error:', err);
     res.status(500).json({ error: 'Internal server error' });
