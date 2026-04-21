@@ -189,7 +189,7 @@ export default function AddExpense() {
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">{t('split_type')}</label>
             <div className="flex gap-2">
-              {['equal', 'percentage', 'exact', 'shares'].map(type => (
+              {['equal', 'percentage', 'exact'].map(type => (
                 <button
                   key={type}
                   type="button"
