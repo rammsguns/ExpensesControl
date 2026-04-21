@@ -32,6 +32,8 @@ export default function EditExpense() {
   const [splits, setSplits] = React.useState([]);
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  // Track if amount was manually set (for exact mode auto-calculation)
+  const [manualAmount, setManualAmount] = React.useState(false);
 
   // Populate form when expense loads
   React.useEffect(() => {
@@ -42,6 +44,25 @@ export default function EditExpense() {
       setSplitType(expense.split_type || 'equal');
     }
   }, [expense]);
+
+  // Auto-calculate total amount for exact splits
+  React.useEffect(() => {
+    if (splitType === 'exact' && !manualAmount) {
+      const total = splits.reduce((sum, s) => {
+        const val = parseFloat(s.value);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+      if (total > 0) {
+        setAmount(total.toFixed(2));
+      }
+    }
+  }, [splits, splitType, manualAmount]);
+
+  // Calculate split total for display
+  const splitTotal = splits.reduce((sum, s) => {
+    const val = parseFloat(s.value);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
 
   // Initialize splits when splitType or members change
   React.useEffect(() => {
@@ -124,16 +145,45 @@ export default function EditExpense() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('amount')} (MX$)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('amount')} (MX$)
+              {splitType === 'exact' && (
+                <span className="text-xs text-gray-400 ml-1 font-normal">
+                  (auto-calculated from splits)
+                </span>
+              )}
+            </label>
             <input
               type="number"
               step="0.01"
               min="0.01"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              onChange={(e) => {
+                setAmount(e.target.value);
+                if (splitType === 'exact') {
+                  setManualAmount(true);
+                }
+              }}
+              onBlur={() => {
+                if (!amount && splitType === 'exact') {
+                  setManualAmount(false);
+                }
+              }}
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none ${
+                splitType === 'exact' && !manualAmount ? 'bg-gray-50' : ''
+              }`}
               required
             />
+            {splitType === 'exact' && (
+              <p className="text-xs text-gray-500 mt-1">
+                Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+                  MX${splitTotal.toFixed(2)}
+                </span>
+                {Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 && (
+                  <span className="text-red-500 ml-1">⚠️ Does not match total</span>
+                )}
+              </p>
+            )}
           </div>
 
           <div>

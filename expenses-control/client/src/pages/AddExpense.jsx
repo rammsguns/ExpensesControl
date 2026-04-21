@@ -25,6 +25,8 @@ export default function AddExpense() {
   const [splits, setSplits] = React.useState([]);
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  // Track if amount was manually set (for exact mode auto-calculation)
+  const [manualAmount, setManualAmount] = React.useState(false);
 
   React.useEffect(() => {
     if (members.length > 0 && !paidBy) {
@@ -35,15 +37,46 @@ export default function AddExpense() {
     } else {
       setSplits(members.map(m => ({ userId: m.id, name: m.name, value: '' })));
     }
+    // Reset manual flag when split type changes
+    setManualAmount(false);
   }, [members, splitType]);
+
+  // Auto-calculate total amount for exact splits
+  React.useEffect(() => {
+    if (splitType === 'exact' && !manualAmount) {
+      const total = splits.reduce((sum, s) => {
+        const val = parseFloat(s.value);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+      if (total > 0) {
+        setAmount(total.toFixed(2));
+      }
+    }
+  }, [splits, splitType, manualAmount]);
 
   const perPerson = amount && members.length > 0 && splitType === 'equal'
     ? (parseFloat(amount) / members.length).toFixed(2)
     : null;
 
+  // Calculate split total for display
+  const splitTotal = splits.reduce((sum, s) => {
+    const val = parseFloat(s.value);
+    return sum + (isNaN(val) ? 0 : val);
+  }, 0);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validate exact splits match total
+    if (splitType === 'exact') {
+      const parsedAmount = parseFloat(amount);
+      if (Math.abs(splitTotal - parsedAmount) > 0.01) {
+        setError(`Split amounts must total MX$${parsedAmount.toFixed(2)}. Current total: MX$${splitTotal.toFixed(2)}`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -97,16 +130,46 @@ export default function AddExpense() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('amount')} (MXN)</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {t('amount')} (MXN)
+              {splitType === 'exact' && (
+                <span className="text-xs text-gray-400 ml-1 font-normal">
+                  (auto-calculated from splits)
+                </span>
+              )}
+            </label>
             <input
               type="number"
               step="0.01"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                if (splitType === 'exact') {
+                  setManualAmount(true);
+                }
+              }}
+              onBlur={() => {
+                // If amount is cleared, allow auto-calculation again
+                if (!amount && splitType === 'exact') {
+                  setManualAmount(false);
+                }
+              }}
               placeholder="0.00"
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none ${
+                splitType === 'exact' && !manualAmount ? 'bg-gray-50' : ''
+              }`}
               required
             />
+            {splitType === 'exact' && (
+              <p className="text-xs text-gray-500 mt-1">
+                Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+                  MX${splitTotal.toFixed(2)}
+                </span>
+                {Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 && (
+                  <span className="text-red-500 ml-1">⚠️ Does not match total</span>
+                )}
+              </p>
+            )}
           </div>
 
           <div>
@@ -153,6 +216,9 @@ export default function AddExpense() {
           {/* Custom splits */}
           {splitType !== 'equal' && (
             <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700">
+                {splitType === 'exact' ? 'Enter each person\'s share:' : t('splits')}
+              </p>
               {splits.map((s, i) => (
                 <div key={s.userId} className="flex items-center gap-3">
                   <span className="text-sm text-gray-700 w-24">{s.name || members.find(m => m.id === s.userId)?.name}</span>
@@ -161,7 +227,7 @@ export default function AddExpense() {
                     step="0.01"
                     value={s.value}
                     onChange={(e) => updateSplit(i, e.target.value)}
-                    placeholder={splitType === 'percentage' ? '%' : splitType === 'shares' ? 'shares' : '$'}
+                    placeholder={splitType === 'percentage' ? '%' : splitType === 'shares' ? 'shares' : 'MX$'}
                     className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                   />
                 </div>
