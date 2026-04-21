@@ -1,3 +1,7 @@
+import React from 'react';
+import { Navigate, Routes, Route } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';

@@ -9,9 +9,10 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
 const sanitize = (text) => (typeof text === 'string' ? DOMPurify.sanitize(text) : text);
+const VALID_SPLIT_TYPES = ['equal', 'percentage', 'exact', 'shares'];
 
 // GET /search — Search expenses with filters
-router.get('/search', async (req, res) => {
+router.get('/search', auth, async (req, res) => {
   const { q, groupId, startDate, endDate, minAmount, maxAmount, splitType } = req.query;
 
   try {
@@ -65,7 +66,7 @@ router.get('/search', async (req, res) => {
 });
 
 // POST / - Create new expense
-router.post('/', requireGroupMember, async (req, res) => {
+router.post('/', auth, requireGroupMember, async (req, res) => {
   const { groupId, description, amount, paidBy, splitType, splits } = req.body;
 
   try {
@@ -140,7 +141,7 @@ router.post('/', requireGroupMember, async (req, res) => {
   }
 });
 
-router.put('/:id', async (req, res) => {
+router.put('/:id', auth, async (req, res) => {
   const { description, amount, paidBy, paid_by, splitType, splits } = req.body;
   const expenseId = req.params.id;
 
@@ -249,85 +250,9 @@ router.put('/:id', async (req, res) => {
   }
 });
 
-router.get('/search', async (req, res) => {
-  const { q, groupId, startDate, endDate, minAmount, maxAmount, splitType } = req.query;
 
-  try {
-    // Get all groups the user belongs to
-    const userGroups = await db('group_members')
-      .where({ user_id: req.user.id })
-      .select('group_id');
-    const groupIds = userGroups.map(g => g.group_id);
 
-    if (groupIds.length === 0) {
-      return res.json([]);
-    }
-
-    let query = db('expenses')
-      .whereIn('group_id', groupIds)
-      .orderBy('created_at', 'desc');
-
-    // Filter by specific group
-    if (groupId) {
-      const gid = parseInt(groupId);
-      if (!groupIds.includes(gid)) {
-        return res.status(403).json({ error: 'Not a member of this group' });
-      }
-      query = query.where({ group_id: gid });
-    }
-
-    // Search by description (case-insensitive)
-    if (q) {
-      query = query.where('description', 'like', `%${q}%`);
-    }
-
-    // Date range filter
-    if (startDate) {
-      query = query.where('created_at', '>=', `${startDate} 00:00:00`);
-    }
-    if (endDate) {
-      query = query.where('created_at', '<=', `${endDate} 23:59:59`);
-    }
-
-    // Amount range filter
-    if (minAmount) {
-      query = query.where('amount', '>=', parseFloat(minAmount));
-    }
-    if (maxAmount) {
-      query = query.where('amount', '<=', parseFloat(maxAmount));
-    }
-
-    // Split type filter
-    if (splitType) {
-      query = query.where({ split_type: splitType });
-    }
-
-    const expenses = await query;
-
-    // Fetch details for each expense
-    const detailedExpenses = await Promise.all(expenses.map(async (exp) => {
-      const splits = await db('expense_splits')
-        .where({ expense_id: exp.id })
-        .join('users', 'expense_splits.user_id', 'users.id')
-        .select('users.id', 'users.name', 'expense_splits.amount as share_amount');
-      const payer = await db('users').where({ id: exp.paid_by }).first();
-      const group = await db('groups').where({ id: exp.group_id }).first();
-      return {
-        ...exp,
-        splits,
-        paid_by_name: payer?.name,
-        group_name: group?.name
-      };
-    }));
-
-    res.json(detailedExpenses);
-  } catch (err) {
-    console.error('Search expenses error:', err);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-router.get('/group/:groupId', requireGroupMember, async (req, res) => {
+router.get('/group/:groupId', auth, requireGroupMember, async (req, res) => {
   try {
     const expenses = await db('expenses')
       .where({ group_id: req.params.groupId })
@@ -349,7 +274,7 @@ router.get('/group/:groupId', requireGroupMember, async (req, res) => {
   }
 });
 
-router.get('/:id', async (req, res) => {
+router.get('/:id', auth, async (req, res) => {
   try {
     const expense = await db('expenses').where({ id: req.params.id }).first();
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
@@ -375,7 +300,7 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', auth, async (req, res) => {
   try {
     const expense = await db('expenses').where({ id: req.params.id }).first();
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
