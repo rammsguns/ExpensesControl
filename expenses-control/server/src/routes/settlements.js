@@ -18,12 +18,25 @@ router.post('/', async (req, res) => {
   }
 
   try {
-    // Verify user is a member of the group
-    const membership = await db('group_members')
-      .where({ group_id: groupId, user_id: req.user.id })
+    // Verify requester IS the fromUserId (only the payer can record a settlement)
+    if (req.user.id !== fromUserId) {
+      return res.status(403).json({ error: 'Forbidden: You can only record settlements where you are the payer' });
+    }
+
+    // Verify both fromUserId and toUserId are members of the group
+    const fromMembership = await db('group_members')
+      .where({ group_id: groupId, user_id: fromUserId })
       .first();
-    if (!membership) {
-      return res.status(403).json({ error: 'Forbidden: Not a member of this group' });
+    const toMembership = await db('group_members')
+      .where({ group_id: groupId, user_id: toUserId })
+      .first();
+    if (!fromMembership || !toMembership) {
+      return res.status(403).json({ error: 'Forbidden: Both users must be members of the group' });
+    }
+
+    // Verify fromUserId !== toUserId (no self-settlement)
+    if (fromUserId === toUserId) {
+      return res.status(400).json({ error: 'Cannot settle with yourself' });
     }
 
     const [id] = await db('settlements').insert({
