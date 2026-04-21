@@ -4,6 +4,7 @@ const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const rateLimit = require('express-rate-limit');
+const crypto = require('crypto');
 const db = require('./db');
 const authRoutes = require('./routes/auth');
 const groupRoutes = require('./routes/groups');
@@ -46,6 +47,47 @@ app.use(generalLimiter);
 
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
+
+// CSRF protection: HMAC-based double-submit cookie pattern
+// Secret is stored in a cookie; derived token must be sent as X-CSRF-Token header
+function generateCsrfToken(secret) {
+  return crypto.createHmac('sha256', secret).update('csrf').digest('hex');
+}
+
+// Set CSRF cookie on every request (creates if missing)
+app.use((req, res, next) => {
+  if (!req.cookies || !req.cookies.__csrf) {
+    const secret = crypto.randomBytes(32).toString('hex');
+    res.cookie('__csrf', secret, {
+      httpOnly: false, // Frontend needs to read this to derive the token
+      sameSite: 'strict',
+      path: '/',
+    });
+    req._csrfSecret = secret;
+  } else {
+    req._csrfSecret = req.cookies.__csrf;
+  }
+  next();
+});
+
+// CSRF token endpoint — frontend calls this to get a derived token
+app.get('/api/auth/csrf-token', (req, res) => {
+  const token = generateCsrfToken(req._csrfSecret);
+  res.json({ csrfToken: token });
+});
+
+// Validate CSRF token on state-changing requests
+app.use('/api', (req, res, next) => {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return next();
+  // Skip for login/register (user doesn't have CSRF cookie yet)
+  if (req.path === '/auth/login' || req.path === '/auth/register') return next();
+  const secret = req._csrfSecret;
+  const headerToken = req.headers['x-csrf-token'];
+  if (!secret || !headerToken || headerToken !== generateCsrfToken(secret)) {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next();
+});
 
 app.use('/api/auth', authRoutes);
 app.use('/api/groups', groupRoutes);
