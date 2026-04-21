@@ -3,6 +3,12 @@ const router = express.Router();
 const db = require('../db');
 const auth = require('../middleware/auth');
 const { requireGroupMember } = require('../middleware/auth');
+const createDOMPurify = require('dompurify');
+const { JSDOM } = require('jsdom');
+const window = new JSDOM('').window;
+const DOMPurify = createDOMPurify(window);
+
+const sanitize = (text) => (typeof text === 'string' ? DOMPurify.sanitize(text) : text);
 
 router.use(auth);
 
@@ -68,7 +74,7 @@ router.post('/', async (req, res) => {
 
     const [expenseId] = await db('expenses').insert({
       group_id: groupId,
-      description,
+      description: sanitize(description),
       amount,
       paid_by: paidBy,
       split_type: splitType
