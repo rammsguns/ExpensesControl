@@ -7,6 +7,22 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 
+// Wrapper to avoid duplicate useQuery in React Refresh signature
+function useGroupsQuery() {
+  return useQuery({
+    queryKey: ['groups'],
+    queryFn: () => api.get('/groups').then(r => r.data),
+  });
+}
+
+function useSearchQuery(searchParams) {
+  return useQuery({
+    queryKey: ['expenses-search', searchParams],
+    queryFn: () => api.get(`/expenses/search?${searchParams}`).then(r => r.data),
+    enabled: searchParams.length > 0,
+  });
+}
+
 function groupByMonth(expenses) {
   const groups = {};
   expenses.forEach(exp => {
@@ -55,10 +71,8 @@ export default function SearchExpenses() {
   const [showFilters, setShowFilters] = React.useState(false);
 
   // Fetch user's groups for the filter dropdown
-  const { data: groups = [] } = useQuery({
-    queryKey: ['groups'],
-    queryFn: () => api.get('/groups').then(r => r.data),
-  });
+  const groupsQuery = useGroupsQuery();
+  const groups = groupsQuery.data || [];
 
   // Build search params
   const searchParams = React.useMemo(() => {
@@ -73,11 +87,9 @@ export default function SearchExpenses() {
     return params.toString();
   }, [query, groupId, startDate, endDate, minAmount, maxAmount, splitType]);
 
-  const { data: results = [], isLoading } = useQuery({
-    queryKey: ['expenses-search', searchParams],
-    queryFn: () => api.get(`/expenses/search?${searchParams}`).then(r => r.data),
-    enabled: searchParams.length > 0,
-  });
+  const resultsQuery = useSearchQuery(searchParams);
+  const results = resultsQuery.data || [];
+  const isLoading = resultsQuery.isLoading;
 
   const monthlyResults = groupByMonth(results);
 
