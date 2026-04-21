@@ -1,7 +1,3 @@
-import React from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
-
 import Dashboard from './pages/Dashboard';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -14,6 +10,7 @@ import Activity from './pages/Activity';
 import Account from './pages/Account';
 import TwoFALogin from './pages/TwoFALogin';
 import TwoFASetup from './pages/TwoFASetup';
+import SearchExpenses from './pages/SearchExpenses';
 
 const ProtectedRoute = ({ children }) => {
   const { user, loading } = useAuth();
@@ -35,6 +32,7 @@ function App() {
       <Route path="/2fa-login" element={<TwoFALogin />} />
       
       <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><SearchExpenses /></ProtectedRoute>} />
       <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
       <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
       <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
@@ -44,6 +42,7 @@ function App() {
       <Route path="/add-expense/:groupId" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
       <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
       <Route path="/settle/:groupId" element={<ProtectedRoute><SettleUp /></ProtectedRoute>} />
+      <Route path="/search" element={<ProtectedRoute><SearchExpenses /></ProtectedRoute>} />
     </Routes>
   );
 }

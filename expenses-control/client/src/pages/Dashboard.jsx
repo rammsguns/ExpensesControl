@@ -106,6 +106,19 @@ export default function Dashboard() {
           )}
         </div>
 
+        {/* Search Button */}
+        <div className="mt-4">
+          <button
+            onClick={() => navigate('/search')}
+            className="w-full bg-white border border-gray-200 hover:border-emerald-300 rounded-xl px-4 py-3 flex items-center gap-3 transition shadow-sm"
+          >
+            <span className="text-xl">🔍</span>
+            <span className="text-gray-500 text-sm">
+              {language === 'es' ? 'Buscar gastos...' : 'Search expenses...'}
+            </span>
+          </button>
+        </div>
+
         {/* Groups */}
         <div className="mt-6">
           <h3 className="font-semibold text-gray-800 text-lg mb-3">
