@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
@@ -41,7 +41,6 @@ function guessCategory(description) {
 }
 
 export default function SearchExpenses() {
-  const qc = useQueryClient();
   const navigate = useNavigate();
   const { t, language } = useTranslation();
   const { user } = useAuth();
