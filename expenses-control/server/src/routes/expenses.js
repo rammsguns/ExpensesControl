@@ -15,7 +15,7 @@ router.use(auth);
 const VALID_SPLIT_TYPES = ['equal', 'percentage', 'exact', 'shares'];
 
 router.put('/:id', async (req, res) => {
-  const { description, amount, paidBy, splitType, splits } = req.body;
+  const { description, amount, paidBy, paid_by, splitType, splits } = req.body;
   const expenseId = req.params.id;
 
   try {
@@ -27,12 +27,18 @@ router.put('/:id', async (req, res) => {
       return res.status(403).json({ error: 'Forbidden: You are not the creator of this expense' });
     }
 
+    // Handle both paidBy and paid_by from frontend
+    const finalPaidBy = paidBy || paid_by;
+    
+    // Parse amount - could be string from JSON
+    const parsedAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+
     // Input validation
-    if (!description || amount === undefined || !paidBy || !splitType) {
+    if (!description || parsedAmount === undefined || !finalPaidBy || !splitType) {
       return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    if (typeof amount !== 'number' || amount <= 0) {
+    if (typeof parsedAmount !== 'number' || isNaN(parsedAmount) || parsedAmount <= 0) {
       return res.status(400).json({ error: 'Amount must be a positive number' });
     }
 
@@ -44,36 +50,32 @@ router.put('/:id', async (req, res) => {
       return res.status(400).json({ error: 'Splits array is required for non-equal split types' });
     }
 
-    // ... (Rest of validation logic)
+    // Validate splits based on type
     if (splitType === 'percentage') {
-      for (const s of splits) {
-        if (typeof s.percentage !== 'number' || s.percentage < 0 || s.percentage > 100) {
-          return res.status(400).json({ error: 'Each split percentage must be between 0 and 100' });
-        }
+      const totalPct = splits.reduce((sum, s) => {
+        const pct = typeof s.percentage === 'string' ? parseFloat(s.percentage) : s.percentage;
+        return sum + (pct || 0);
+      }, 0);
+      if (Math.abs(totalPct - 100) > 0.1) {
+        return res.status(400).json({ error: `Percentages must sum to 100%, got ${totalPct.toFixed(1)}%` });
       }
     }
 
     if (splitType === 'exact') {
-      for (const s of splits) {
-        if (typeof s.amount !== 'number' || s.amount < 0) {
-          return res.status(400).json({ error: 'Each split amount must be a non-negative number' });
-        }
-      }
-    }
-
-    if (splitType === 'shares') {
-      for (const s of splits) {
-        if (typeof s.shares !== 'number' || s.shares <= 0) {
-          return res.status(400).json({ error: 'Each split share must be a positive number' });
-        }
+      const totalExact = splits.reduce((sum, s) => {
+        const amt = typeof s.amount === 'string' ? parseFloat(s.amount) : s.amount;
+        return sum + (amt || 0);
+      }, 0);
+      if (Math.abs(totalExact - parsedAmount) > 0.01) {
+        return res.status(400).json({ error: `Exact amounts must sum to total amount MX$${parsedAmount.toFixed(2)}` });
       }
     }
 
     // Update expense
     await db('expenses').where({ id: expenseId }).update({
       description: sanitize(description),
-      amount,
-      paid_by: paidBy,
+      amount: parsedAmount,
+      paid_by: finalPaidBy,
       split_type: splitType
     });
 
@@ -89,26 +91,26 @@ router.put('/:id', async (req, res) => {
         .join('users', 'group_members.user_id', 'users.id')
         .select('users.id');
       
-      const share = parseFloat(amount) / members.length;
+      const share = parsedAmount / members.length;
       expenseSplits = members.map(m => ({ expense_id: expenseId, user_id: m.id, amount: share }));
     } else if (splitType === 'percentage') {
       expenseSplits = splits.map(s => ({
         expense_id: expenseId,
         user_id: s.userId,
-        amount: (s.percentage / 100) * parseFloat(amount)
+        amount: ((typeof s.percentage === 'string' ? parseFloat(s.percentage) : s.percentage) / 100) * parsedAmount
       }));
     } else if (splitType === 'exact') {
       expenseSplits = splits.map(s => ({
         expense_id: expenseId,
         user_id: s.userId,
-        amount: s.amount
+        amount: typeof s.amount === 'string' ? parseFloat(s.amount) : s.amount
       }));
     } else if (splitType === 'shares') {
-      const totalShares = splits.reduce((sum, s) => sum + s.shares, 0);
+      const totalShares = splits.reduce((sum, s) => sum + (typeof s.shares === 'string' ? parseFloat(s.shares) : s.shares), 0);
       expenseSplits = splits.map(s => ({
         expense_id: expenseId,
         user_id: s.userId,
-        amount: (s.shares / totalShares) * parseFloat(amount)
+        amount: ((typeof s.shares === 'string' ? parseFloat(s.shares) : s.shares) / totalShares) * parsedAmount
       }));
     }
 
