@@ -93,6 +93,28 @@ export default function EditExpense() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Validate exact splits match total
+    if (splitType === 'exact') {
+      const parsedAmount = parseFloat(amount);
+      if (Math.abs(splitTotal - parsedAmount) > 0.01) {
+        setError(`Split amounts must total MX$${parsedAmount.toFixed(2)}. Current total: MX$${splitTotal.toFixed(2)}`);
+        return;
+      }
+    }
+
+    // Validate percentage splits sum to 100%
+    if (splitType === 'percentage') {
+      const totalPct = splits.reduce((sum, s) => {
+        const val = parseFloat(s.value);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+      if (Math.abs(totalPct - 100) > 0.1) {
+        setError(`Percentages must sum to 100%. Current total: ${totalPct.toFixed(1)}%`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -234,7 +256,7 @@ export default function EditExpense() {
                     step="0.01"
                     min="0"
                     placeholder={
-                      splitType === 'percentage' ? '%' : splitType === 'shares' ? 'shares' : 'MX$'
+                      splitType === 'percentage' ? '%' : 'MX$'
                     }
                     value={s.value}
                     onChange={(e) => {
@@ -247,6 +269,16 @@ export default function EditExpense() {
                   />
                 </div>
               ))}
+              {splitType === 'percentage' && (
+                <p className="text-xs mt-1">
+                  Total: <span className={Math.abs(splitTotal - 100) > 0.1 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+                    {splitTotal.toFixed(1)}%
+                  </span>
+                  {Math.abs(splitTotal - 100) > 0.1 && (
+                    <span className="text-red-500 ml-1">⚠️ Must equal 100%</span>
+                  )}
+                </p>
+              )}
             </div>
           )}
 

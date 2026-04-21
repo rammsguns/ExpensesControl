@@ -77,6 +77,18 @@ export default function AddExpense() {
       }
     }
 
+    // Validate percentage splits sum to 100%
+    if (splitType === 'percentage') {
+      const totalPct = splits.reduce((sum, s) => {
+        const val = parseFloat(s.value);
+        return sum + (isNaN(val) ? 0 : val);
+      }, 0);
+      if (Math.abs(totalPct - 100) > 0.1) {
+        setError(`Percentages must sum to 100%. Current total: ${totalPct.toFixed(1)}%`);
+        return;
+      }
+    }
+
     setLoading(true);
 
     try {
@@ -227,11 +239,21 @@ export default function AddExpense() {
                     step="0.01"
                     value={s.value}
                     onChange={(e) => updateSplit(i, e.target.value)}
-                    placeholder={splitType === 'percentage' ? '%' : splitType === 'shares' ? 'shares' : 'MX$'}
+                    placeholder={splitType === 'percentage' ? '%' : 'MX$'}
                     className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
                   />
                 </div>
               ))}
+              {splitType === 'percentage' && (
+                <p className="text-xs mt-1">
+                  Total: <span className={Math.abs(splitTotal - 100) > 0.1 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+                    {splitTotal.toFixed(1)}%
+                  </span>
+                  {Math.abs(splitTotal - 100) > 0.1 && (
+                    <span className="text-red-500 ml-1">⚠️ Must equal 100%</span>
+                  )}
+                </p>
+              )}
             </div>
           )}
 
