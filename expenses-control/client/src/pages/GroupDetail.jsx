@@ -8,8 +8,6 @@ import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import ExpenseCard from '../components/ExpenseCard';
 
-import ExpenseCard from '../components/ExpenseCard';
-
 const CATEGORY_ICONS = {
   food: { emoji: '🍽️', bg: 'bg-pink-100' },
   transport: { emoji: '⛽', bg: 'bg-blue-100' },
