@@ -99,10 +99,11 @@ export default function SearchExpenses() {
     <div className="min-h-screen bg-gray-50 pb-20">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-4">
-        <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-700 text-lg font-medium">
+        <div className="flex items-center gap-3 mb-4">
+          <button onClick={() => navigate('/')} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold">
             ←
           </button>
+          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-xl" title="Home">🏠</button>
           <h2 className="text-xl font-bold text-gray-800">🔍 {language === 'es' ? 'Buscar Gastos' : 'Search Expenses'}</h2>
         </div>
 

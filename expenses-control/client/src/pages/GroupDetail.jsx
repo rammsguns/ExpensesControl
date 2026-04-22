@@ -102,10 +102,11 @@ export default function GroupDetail() {
       <div className="max-w-lg mx-auto">
         {/* Group Header */}
         <div className="bg-emerald-600 text-white px-4 pt-4 pb-6 -mt-px">
-          <div className="flex items-center gap-2 mb-1">
-            <button onClick={() => navigate('/')} className="text-white/70 hover:text-white text-lg font-medium">
+          <div className="flex items-center gap-3 mb-1">
+            <button onClick={() => navigate('/')} className="flex items-center gap-1 text-white/80 hover:text-white text-2xl font-semibold">
               ← {language === 'es' ? 'Grupos' : 'Groups'}
             </button>
+            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-xl ml-auto" title="Home">🏠</button>
           </div>
           <h1 className="text-2xl font-bold">{group.name}</h1>
           <div className="flex gap-2 mt-2">

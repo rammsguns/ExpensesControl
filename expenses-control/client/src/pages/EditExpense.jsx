@@ -150,6 +150,14 @@ export default function EditExpense() {
     <div className="min-h-screen bg-gray-50 pb-20">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-4">
+        <div className="flex items-center gap-3 mb-2">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold" title={t('cancel')}">
+            ←
+          </button>
+          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-xl" title="Home">
+            🏠
+          </button>
+        </div>
         <h2 className="text-xl font-bold text-gray-800 mb-4">✏️ {t('edit_expense')}</h2>
 
         {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
