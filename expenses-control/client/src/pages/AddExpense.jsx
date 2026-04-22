@@ -125,7 +125,7 @@ export default function AddExpense() {
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold" title={t('cancel')}">
+          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold" title={t('cancel')}>
             ←
           </button>
           <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-xl" title="Home">
