@@ -154,7 +154,7 @@ export default function EditExpense() {
           <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold" title={t('cancel')}>
             ←
           </button>
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-xl" title="Home">
+          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-2xl" title="Home">
             🏠
           </button>
         </div>

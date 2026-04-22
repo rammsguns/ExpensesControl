@@ -106,7 +106,7 @@ export default function GroupDetail() {
             <button onClick={() => navigate('/')} className="flex items-center gap-1 text-white/80 hover:text-white text-2xl font-semibold">
               ← {language === 'es' ? 'Grupos' : 'Groups'}
             </button>
-            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-xl ml-auto" title="Home">🏠</button>
+            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-2xl ml-auto" title="Home">🏠</button>
           </div>
           <h1 className="text-2xl font-bold">{group.name}</h1>
           <div className="flex gap-2 mt-2">

@@ -52,7 +52,7 @@ export default function TwoFASetup() {
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
           <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold">←</button>
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-xl" title="Home">🏠</button>
+          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-2xl" title="Home">🏠</button>
           <h1 className="text-xl font-bold text-gray-800">
             {language === 'es' ? 'Autenticación de dos factores' : 'Two-Factor Authentication'}
           </h1>
