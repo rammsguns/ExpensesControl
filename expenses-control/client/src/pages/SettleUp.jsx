@@ -69,7 +69,7 @@ export default function SettleUp() {
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="text-emerald-600 text-sm">← {t('dashboard')}</button>
+          <button onClick={() => navigate(`/group/${groupId}`)} className="text-emerald-600 text-lg font-medium">← {t('dashboard')}</button>
         </div>
 
         <h2 className="text-2xl font-bold text-gray-800">🤝 {t('settle_up')}</h2>

@@ -103,7 +103,7 @@ export default function GroupDetail() {
         {/* Group Header */}
         <div className="bg-emerald-600 text-white px-4 pt-4 pb-6 -mt-px">
           <div className="flex items-center gap-2 mb-1">
-            <button onClick={() => navigate('/')} className="text-white/70 hover:text-white text-sm">
+            <button onClick={() => navigate('/')} className="text-white/70 hover:text-white text-lg font-medium">
               ← {language === 'es' ? 'Grupos' : 'Groups'}
             </button>
           </div>

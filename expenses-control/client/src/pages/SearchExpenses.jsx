@@ -100,7 +100,7 @@ export default function SearchExpenses() {
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-4">
         <div className="flex items-center gap-2 mb-4">
-          <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-700">
+          <button onClick={() => navigate('/')} className="text-gray-500 hover:text-gray-700 text-lg font-medium">
             ←
           </button>
           <h2 className="text-xl font-bold text-gray-800">🔍 {language === 'es' ? 'Buscar Gastos' : 'Search Expenses'}</h2>
