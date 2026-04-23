@@ -61,5 +61,19 @@
   "edit": "Edit",
   "edit_expense": "Edit Expense",
   "confirm_delete_expense": "Are you sure you want to delete this expense? This action cannot be undone.",
-  "login_error": "Invalid credentials"
+  "login_error": "Invalid credentials",
+  "toast_group_created": "Group created successfully!",
+  "toast_expense_added": "Expense added successfully!",
+  "toast_expense_edited": "Expense updated successfully!",
+  "toast_expense_deleted": "Expense deleted successfully!",
+  "toast_settled": "Settlement recorded successfully!",
+  "toast_member_added": "Member added successfully!",
+  "toast_registered": "Account created successfully!",
+  "toast_error_generic": "Something went wrong. Please try again.",
+  "show_all": "Show all",
+  "no_search_results": "Try different search terms",
+  "add_first_expense": "Add your first expense",
+  "error_heading": "Error",
+  "quick_actions": "Quick Actions",
+  "recent_activity": "Recent Activity"
 }

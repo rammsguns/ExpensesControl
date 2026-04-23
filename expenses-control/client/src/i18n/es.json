@@ -61,5 +61,19 @@
   "edit": "Editar",
   "edit_expense": "Editar Gasto",
   "confirm_delete_expense": "¿Estás seguro de eliminar este gasto? Esta acción no se puede deshacer.",
-  "login_error": "Credenciales inválidas"
+  "login_error": "Credenciales inválidas",
+  "toast_group_created": "¡Grupo creado exitosamente!",
+  "toast_expense_added": "¡Gasto agregado exitosamente!",
+  "toast_expense_edited": "¡Gasto actualizado exitosamente!",
+  "toast_expense_deleted": "¡Gasto eliminado exitosamente!",
+  "toast_settled": "¡Pago registrado exitosamente!",
+  "toast_member_added": "¡Miembro agregado exitosamente!",
+  "toast_registered": "¡Cuenta creada exitosamente!",
+  "toast_error_generic": "Algo salió mal. Intenta de nuevo.",
+  "show_all": "Ver todo",
+  "no_search_results": "Intenta con otros términos de búsqueda",
+  "add_first_expense": "Agrega tu primer gasto",
+  "error_heading": "Error",
+  "quick_actions": "Acciones rápidas",
+  "recent_activity": "Actividad reciente"
 }
