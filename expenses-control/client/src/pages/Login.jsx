@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
+import PageTransition from '../components/PageTransition';
+import { toast } from 'react-hot-toast';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -31,15 +33,18 @@ export default function Login() {
       // but we already have the response — so set token/user directly
       localStorage.setItem('token', res.data.token);
       localStorage.setItem('user', JSON.stringify(res.data.user));
+      toast.success(t('toast_login_success'));
       window.location.href = '/';
     } catch (err) {
       setError(err.response?.data?.error || t('login_error'));
+      toast.error(t('toast_login_error'));
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <PageTransition>
       <div className="w-full max-w-sm">
         <div className="text-center mb-8">
           <div className="text-5xl mb-3">💸</div>
@@ -83,6 +88,7 @@ export default function Login() {
           {t('no_account')} <Link to="/register" className="text-emerald-600 font-medium">{t('register')}</Link>
         </p>
       </div>
+      </PageTransition>
     </div>
   );
 }

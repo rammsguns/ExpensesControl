@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import api from '../api';
+import PageTransition from '../components/PageTransition';
+import { toast } from 'react-hot-toast';
 
 export default function Register() {
   const { t } = useTranslation();
@@ -47,15 +49,18 @@ export default function Register() {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
+      toast.success(t('toast_register_success'));
       window.location.href = '/';
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
+      toast.error(t('toast_error_generic'));
     }
     setLoading(false);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
+      <PageTransition>
       <div className="w-full max-w-md">
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-emerald-600">💰 ExpensesControl</h1>
@@ -153,6 +158,7 @@ export default function Register() {
           {t('has_account')} <Link to="/login" className="text-emerald-600 font-medium">{t('login')}</Link>
         </p>
       </div>
+      </PageTransition>
     </div>
   );
 }

@@ -59,18 +59,21 @@ export default function SettleUp() {
       setFromUserId('');
       setToUserId('');
       setSettleAmount('');
+      toast.success(t('toast_settlement_recorded'));
       qc.invalidateQueries({ queryKey: ['settlements', groupId] });
       qc.invalidateQueries({ queryKey: ['settlementPlan', groupId] });
       qc.invalidateQueries({ queryKey: ['balances', groupId] });
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to record settlement');
+      toast.error(t('toast_error_generic'));
     }
     setLoading(false);
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
+      <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold">
@@ -175,9 +178,8 @@ export default function SettleUp() {
           )}
         </div>
       </div>
+      </PageTransition>
+      <BottomNav />
     </div>
   );
 }
-
-// Import needed for SettleUp
-import { CheckCircle } from 'lucide-react';
