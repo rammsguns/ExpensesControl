@@ -69,6 +69,8 @@
   "toast_settled": "¡Pago registrado exitosamente!",
   "toast_member_added": "¡Miembro agregado exitosamente!",
   "toast_registered": "¡Cuenta creada exitosamente!",
+  "toast_login_success": "¡Bienvenido de vuelta!",
+  "toast_login_error": "Error al iniciar sesión. Verifica tus credenciales.",
   "toast_error_generic": "Algo salió mal. Intenta de nuevo.",
   "show_all": "Ver todo",
   "no_search_results": "Intenta con otros términos de búsqueda",

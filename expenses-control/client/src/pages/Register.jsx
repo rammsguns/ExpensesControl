@@ -49,7 +49,7 @@ export default function Register() {
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
-      toast.success(t('toast_register_success'));
+      toast.success(t('toast_registered'));
       window.location.href = '/';
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');

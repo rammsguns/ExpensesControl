@@ -59,7 +59,7 @@ export default function SettleUp() {
       setFromUserId('');
       setToUserId('');
       setSettleAmount('');
-      toast.success(t('toast_settlement_recorded'));
+      toast.success(t('toast_settled'));
       qc.invalidateQueries({ queryKey: ['settlements', groupId] });
       qc.invalidateQueries({ queryKey: ['settlementPlan', groupId] });
       qc.invalidateQueries({ queryKey: ['balances', groupId] });

@@ -7,7 +7,7 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
-import { EmptySearchResults } from '../components/EmptyStates';
+import { EmptyState } from '../components/EmptyStates';
 import { toast } from 'react-hot-toast';
 import { ArrowLeft, Home, Search, Settings, Plane, Heart, MoreHorizontal, Receipt, DollarSign } from 'lucide-react';
 
@@ -245,7 +245,7 @@ export default function SearchExpenses() {
             <p className="text-slate-500">{language === 'es' ? 'Buscando...' : 'Searching...'}</p>
           </div>
         ) : searchParams.length > 0 && results.length === 0 ? (
-          <EmptySearchResults />
+          <EmptyState type="search" />
         ) : (
           <div className="space-y-4">
             {Object.entries(monthlyResults).map(([month, exps]) => (

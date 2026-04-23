@@ -213,7 +213,7 @@ export default function GroupDetail() {
         {/* Expenses by Month */}
         <div className="px-4 py-4">
           {expenses.length === 0 ? (
-            <EmptyState type="expenses" />
+            <EmptyState type="expenses" groupId={id} />
           ) : (
             Object.entries(monthlyExpenses).map(([month, exps]) => (
               <div key={month} className="mb-4">

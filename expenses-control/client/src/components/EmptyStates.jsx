@@ -54,19 +54,43 @@ export function EmptySearchResults() {
   );
 }
 
-export function EmptyState({ icon: Icon, message, actionLabel, onAction }) {
+export function EmptyState({ type, groupId, onCreateGroup }) {
+  const { t } = useTranslation();
+  
+  const configs = {
+    groups: {
+      icon: Users,
+      message: t('create_first_group'),
+      actionLabel: t('create_group'),
+      onAction: onCreateGroup,
+    },
+    expenses: {
+      icon: Receipt,
+      message: t('no_expenses'),
+      actionLabel: t('add_first_expense'),
+      onAction: groupId ? () => window.location.href = `/add-expense/${groupId}` : null,
+    },
+    search: {
+      icon: Search,
+      message: t('no_search_results'),
+    },
+  };
+  
+  const config = configs[type] || configs.search;
+  const Icon = config.icon;
+  
   return (
     <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-10 text-center">
       <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
         <Icon size={40} className="text-indigo-600" />
       </div>
-      <p className="text-slate-600 mb-4">{message}</p>
-      {onAction && actionLabel && (
+      <p className="text-slate-600 mb-4">{config.message}</p>
+      {config.onAction && config.actionLabel && (
         <button
-          onClick={onAction}
+          onClick={config.onAction}
           className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 font-medium text-sm transition active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none"
         >
-          {actionLabel}
+          <PlusCircle size={18} /> {config.actionLabel}
         </button>
       )}
     </div>

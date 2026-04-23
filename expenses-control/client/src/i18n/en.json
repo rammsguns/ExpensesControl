@@ -69,6 +69,8 @@
   "toast_settled": "Settlement recorded successfully!",
   "toast_member_added": "Member added successfully!",
   "toast_registered": "Account created successfully!",
+  "toast_login_success": "Welcome back!",
+  "toast_login_error": "Login failed. Please check your credentials.",
   "toast_error_generic": "Something went wrong. Please try again.",
   "show_all": "Show all",
   "no_search_results": "Try different search terms",
