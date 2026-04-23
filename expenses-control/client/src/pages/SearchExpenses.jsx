@@ -6,6 +6,9 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import PageTransition from '../components/PageTransition';
+import { EmptySearchResults } from '../components/EmptyStates';
+import { toast } from 'react-hot-toast';
 import { ArrowLeft, Home, Search, Settings, Plane, Heart, MoreHorizontal, Receipt, DollarSign } from 'lucide-react';
 
 // Wrapper to avoid duplicate useQuery in React Refresh signature
@@ -99,6 +102,7 @@ export default function SearchExpenses() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
+      <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-4">
         <div className="flex items-center gap-3 mb-4">
           <button onClick={() => navigate('/')} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold">
@@ -241,10 +245,7 @@ export default function SearchExpenses() {
             <p className="text-slate-500">{language === 'es' ? 'Buscando...' : 'Searching...'}</p>
           </div>
         ) : searchParams.length > 0 && results.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
-            <Search size={48} className="text-slate-300 mb-2" />
-            <p className="text-slate-500">{language === 'es' ? 'No se encontraron gastos' : 'No expenses found'}</p>
-          </div>
+          <EmptySearchResults />
         ) : (
           <div className="space-y-4">
             {Object.entries(monthlyResults).map(([month, exps]) => (
@@ -291,6 +292,7 @@ export default function SearchExpenses() {
           </div>
         )}
       </div>
+      </PageTransition>
 
       <BottomNav />
     </div>

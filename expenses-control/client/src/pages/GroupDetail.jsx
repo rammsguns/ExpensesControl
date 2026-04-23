@@ -6,8 +6,12 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import PageTransition from '../components/PageTransition';
+import { SkeletonCard } from '../components/SkeletonLoaders';
+import { EmptyState } from '../components/EmptyStates';
 import ExpenseCard from '../components/ExpenseCard';
-import { ArrowLeft, Plus, Handshake, Search, Receipt, Pencil, Trash2 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+import { ArrowLeft, Plus, Handshake, Search, Receipt, Pencil, Trash2, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal } from 'lucide-react';
 
 const CATEGORY_ICONS = {
   food: { icon: Receipt, bg: 'bg-pink-100 text-pink-600' },
@@ -100,6 +104,7 @@ export default function GroupDetail() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
+      <PageTransition>
       <div className="max-w-lg mx-auto">
         {/* Group Header */}
         <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-4 pt-5 pb-6 -mt-px">
@@ -208,10 +213,7 @@ export default function GroupDetail() {
         {/* Expenses by Month */}
         <div className="px-4 py-4">
           {expenses.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center">
-              <MoreHorizontal size={48} className="text-slate-300 mb-3" />
-              <p className="text-slate-500">{t('no_expenses')}</p>
-            </div>
+            <EmptyState type="expenses" />
           ) : (
             Object.entries(monthlyExpenses).map(([month, exps]) => (
               <div key={month} className="mb-4">
@@ -228,6 +230,7 @@ export default function GroupDetail() {
                           await api.delete(`/expenses/${expenseId}`);
                           qc.invalidateQueries({ queryKey: ['expenses', id] });
                           qc.invalidateQueries({ queryKey: ['balances', id] });
+                          toast.success(t('toast_expense_deleted'));
                         } catch (err) {
                           alert(err.response?.data?.error || 'Failed to delete expense');
                         }
@@ -280,9 +283,7 @@ export default function GroupDetail() {
       )}
 
       <BottomNav />
+      </PageTransition>
     </div>
   );
 }
-
-// Import needed for GroupDetail
-import { Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal, Home } from 'lucide-react';

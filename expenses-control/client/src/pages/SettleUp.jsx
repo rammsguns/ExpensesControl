@@ -5,6 +5,9 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import BottomNav from '../components/BottomNav';
+import PageTransition from '../components/PageTransition';
+import { toast } from 'react-hot-toast';
 import { ArrowLeft, Home, Handshake, Receipt } from 'lucide-react';
 
 export default function SettleUp() {

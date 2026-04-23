@@ -4,6 +4,8 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '../i18n';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import PageTransition from '../components/PageTransition';
+import { toast } from 'react-hot-toast';
 import { ArrowLeft, Home, Receipt, DollarSign } from 'lucide-react';
 
 export default function AddExpense() {
@@ -107,10 +109,12 @@ export default function AddExpense() {
         })),
       };
       await api.post('/expenses', payload);
+      toast.success(t('toast_expense_added'));
       qc.invalidateQueries({ queryKey: ['expenses', groupId] });
       navigate(`/group/${groupId}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create expense');
+      toast.error(t('toast_error_generic'));
     }
     setLoading(false);
   };
@@ -122,8 +126,9 @@ export default function AddExpense() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
+      <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-2">
           <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold" title={t('cancel')}>
@@ -271,7 +276,7 @@ export default function AddExpense() {
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
           >
-            {loading ? '...' : t('save')}
+            {loading ? 'Saving...' : t('save')}
           </button>
 
           <button
@@ -283,6 +288,7 @@ export default function AddExpense() {
           </button>
         </form>
       </div>
+      </PageTransition>
     </div>
   );
 }

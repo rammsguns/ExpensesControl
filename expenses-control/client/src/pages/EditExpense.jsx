@@ -5,6 +5,8 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import PageTransition from '../components/PageTransition';
+import { toast } from 'react-hot-toast';
 import { ArrowLeft, Home, Pencil, Receipt } from 'lucide-react';
 
 export default function EditExpense() {
@@ -134,11 +136,13 @@ export default function EditExpense() {
       };
 
       await api.put(`/expenses/${expenseId}`, payload);
+      toast.success(t('toast_expense_edited'));
       qc.invalidateQueries({ queryKey: ['expenses', groupId] });
       qc.invalidateQueries({ queryKey: ['expense', expenseId] });
       navigate(`/group/${groupId}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to update expense');
+      toast.error(t('toast_error_generic'));
     }
     setLoading(false);
   };
@@ -150,6 +154,7 @@ export default function EditExpense() {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
+      <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-4">
         <div className="flex items-center gap-3 mb-2">
           <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold" title={t('cancel')}>
@@ -297,7 +302,7 @@ export default function EditExpense() {
               disabled={loading}
               className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
             >
-              {loading ? '...' : t('save')}
+              {loading ? 'Saving...' : t('save')}
             </button>
             <button
               type="button"
@@ -309,6 +314,7 @@ export default function EditExpense() {
           </div>
         </form>
       </div>
+      </PageTransition>
     </div>
   );
 }
