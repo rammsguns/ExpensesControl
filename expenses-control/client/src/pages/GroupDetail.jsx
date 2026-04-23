@@ -97,11 +97,11 @@ export default function GroupDetail() {
   const members = group.members || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       <Navbar />
       <div className="max-w-lg mx-auto">
         {/* Group Header */}
-        <div className="bg-emerald-600 text-white px-4 pt-4 pb-6 -mt-px">
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-4 pt-5 pb-6 -mt-px">
           <div className="flex items-center gap-3 mb-1">
             <button onClick={() => navigate('/')} className="flex items-center gap-1 text-white/80 hover:text-white text-2xl font-semibold">
               ← {language === 'es' ? 'Grupos' : 'Groups'}
@@ -123,21 +123,21 @@ export default function GroupDetail() {
         </div>
 
         {/* Balance Statement */}
-        <div className="bg-white border-b px-4 py-4">
+        <div className="bg-white border-b px-5 py-5">
           {iOwe.length === 0 && owedMe.length === 0 ? (
-            <p className="text-lg font-semibold text-gray-600">
+            <p className="text-xl font-semibold text-gray-600">
               ✅ {language === 'es' ? 'Todo saldado' : 'All settled up'}
             </p>
           ) : (
-            <div className="space-y-1">
+            <div className="space-y-2">
               {iOwe.map(b => (
                 <p key={b.userId} className="text-lg font-semibold text-red-500">
-                  {language === 'es' ? 'Debes a' : 'You owe'} {b.name} <span className="text-orange-500 font-bold">MX$ {Math.abs(b.balance).toFixed(2)}</span>
+                  {language === 'es' ? 'Debes a' : 'You owe'} {b.name} <span className="text-xl font-bold text-orange-500">MX$ {Math.abs(b.balance).toFixed(2)}</span>
                 </p>
               ))}
               {owedMe.map(b => (
                 <p key={b.userId} className="text-lg font-semibold text-gray-800">
-                  {b.name} {language === 'es' ? 'te debe' : 'owes you'} <span className="text-emerald-600 font-bold">MX$ {b.balance.toFixed(2)}</span>
+                  {b.name} {language === 'es' ? 'te debe' : 'owes you'} <span className="text-xl font-bold text-emerald-600">MX$ {b.balance.toFixed(2)}</span>
                 </p>
               ))}
             </div>
@@ -145,22 +145,22 @@ export default function GroupDetail() {
         </div>
 
         {/* Action Buttons */}
-        <div className="flex gap-2 px-4 py-3 bg-white border-b overflow-x-auto">
+        <div className="flex gap-3 px-5 py-4 bg-white border-b overflow-x-auto">
           <Link
             to={`/settle/${id}`}
-            className="bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
           >
             🤝 {language === 'es' ? 'Saldar' : 'Settle up'}
           </Link>
           <button
             onClick={() => setShowBalances(!showBalances)}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition"
+            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
           >
             ⚖️ {language === 'es' ? 'Saldos' : 'Balances'}
           </button>
           <Link
             to={`/add-expense/${id}`}
-            className="bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-4 py-2 text-sm font-medium whitespace-nowrap transition"
+            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
           >
             💰 {language === 'es' ? 'Totales' : 'Totals'}
           </Link>
@@ -168,15 +168,15 @@ export default function GroupDetail() {
 
         {/* Balances Panel (toggle) */}
         {showBalances && (
-          <div className="bg-white border-b px-4 py-3 space-y-2">
+          <div className="bg-white border-b px-5 py-4 space-y-3">
             {balances.map(b => (
-              <div key={b.userId} className="flex justify-between items-center text-sm">
-                <span className="font-medium text-gray-800">
+              <div key={b.userId} className="flex justify-between items-center">
+                <span className="font-semibold text-gray-800 text-base">
                   {b.userId === user?.id ? (language === 'es' ? 'Tú' : 'You') : b.name}
                 </span>
-                <span className={`font-bold ${b.balance > 0.01 ? 'text-emerald-600' : b.balance < -0.01 ? 'text-red-500' : 'text-gray-400'}`}>
+                <span className={`font-bold text-lg ${b.balance > 0.01 ? 'text-emerald-600' : b.balance < -0.01 ? 'text-red-500' : 'text-gray-400'}`}>
                   {Math.abs(b.balance) <= 0.01
-                    ? (language === 'es' ? 'Saldado ✓' : 'Settled ✓')
+                    ? (language === 'es' ? 'Saldado' : 'Settled')
                     : b.balance > 0
                       ? `+MX$ ${b.balance.toFixed(2)}`
                       : `-MX$ ${Math.abs(b.balance).toFixed(2)}`
@@ -188,14 +188,14 @@ export default function GroupDetail() {
         )}
 
         {/* Members pills */}
-        <div className="bg-gray-50 px-4 py-3 border-b">
-          <div className="flex flex-wrap gap-2">
+        <div className="bg-gray-50 px-5 py-4 border-b">
+          <div className="flex flex-wrap gap-3">
             {members.map(m => (
-              <div key={m.id} className="flex items-center gap-1.5 bg-white rounded-full px-3 py-1.5 border">
-                <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-xs font-bold text-emerald-700">
+              <div key={m.id} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 border border-gray-200">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-sm font-bold text-emerald-800">
                   {m.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-xs font-medium text-gray-700">{m.name}</span>
+                <span className="text-sm font-medium text-gray-800">{m.name}</span>
               </div>
             ))}
           </div>
@@ -204,15 +204,15 @@ export default function GroupDetail() {
         {/* Expenses by Month */}
         <div className="px-4 py-4">
           {expenses.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
-              <p className="text-4xl mb-2">🧾</p>
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
+              <p className="text-5xl mb-3">🧾</p>
               <p className="text-gray-500">{t('no_expenses')}</p>
             </div>
           ) : (
             Object.entries(monthlyExpenses).map(([month, exps]) => (
               <div key={month} className="mb-4">
                 <h3 className="text-sm font-semibold text-gray-500 mb-2">{month}</h3>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {exps.map(exp => (
                     <ExpenseCard
                       key={exp.id}

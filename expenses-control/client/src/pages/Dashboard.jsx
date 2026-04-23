@@ -90,44 +90,74 @@ export default function Dashboard() {
   const getGroupEmoji = (type) => GROUP_TYPES.find(g => g.id === type)?.emoji || '📋';
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-gray-50 pb-24">
       <Navbar />
-      <div className="max-w-lg mx-auto px-4 py-4">
+      <div className="max-w-lg mx-auto px-4 py-5">
         {/* Total Balance */}
-        <div className="mt-2 bg-white rounded-xl shadow-sm border p-4">
-          <h3 className="font-semibold text-gray-700 mb-2 text-sm">{t('total_balance')}</h3>
+        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl shadow-lg p-5 text-white mb-4">
+          <h3 className="font-semibold text-emerald-100 mb-2 text-sm">{t('total_balance')}</h3>
           {userBalance && (
-            <div className={`text-3xl font-bold ${userBalance.balance >= 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <div className="text-4xl font-bold mb-2">
               MX$ {Math.abs(userBalance.balance).toFixed(2)}
-              <span className="text-sm font-normal ml-2">
+              <span className="text-lg font-normal ml-2">
                 {userBalance.balance >= 0 ? t('owes_you') : t('you_owe')}
               </span>
             </div>
           )}
         </div>
 
-        {/* Search Button */}
-        <div className="mt-4">
-          <button
-            onClick={() => navigate('/search')}
-            className="w-full bg-white border border-gray-200 hover:border-emerald-300 rounded-xl px-4 py-3 flex items-center gap-3 transition shadow-sm"
-          >
-            <span className="text-xl">🔍</span>
-            <span className="text-gray-500 text-sm">
-              {language === 'es' ? 'Buscar gastos...' : 'Search expenses...'}
-            </span>
-          </button>
+        {/* Quick Actions */}
+        <div className="mb-6">
+          <h3 className="font-semibold text-gray-800 text-lg mb-3">{t('quick_actions')}</h3>
+          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
+            <Link
+              to="/search"
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span className="text-4xl">🔍</span>
+              <span className="text-gray-600 font-medium">
+                {language === 'es' ? 'Buscar' : 'Search'}
+              </span>
+            </Link>
+            <button
+              onClick={() => navigate('/add-expense')}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span className="text-4xl">📝</span>
+              <span className="text-gray-600 font-medium">
+                {language === 'es' ? 'Gasto' : 'Expense'}
+              </span>
+            </button>
+            <button
+              onClick={() => setShowCreate(true)}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span className="text-4xl">➕</span>
+              <span className="text-gray-600 font-medium">
+                {t('create_group')}
+              </span>
+            </button>
+            <Link
+              to={`/settle/${userBalance?.groupId || 'groups'}`}
+              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+            >
+              <span className="text-4xl">🤝</span>
+              <span className="text-gray-600 font-medium">
+                {language === 'es' ? 'Saldar' : 'Settle'}
+              </span>
+            </Link>
+          </div>
         </div>
 
-        {/* Groups */}
-        <div className="mt-6">
+        {/* Your Groups */}
+        <div>
           <h3 className="font-semibold text-gray-800 text-lg mb-3">
-            {language === 'es' ? 'Grupos' : 'Groups'}
+            {language === 'es' ? 'Tus Grupos' : 'Your Groups'}
           </h3>
 
           {groupsLoading ? (
-            <div className="space-y-3">
-              {[1, 2].map(i => (
+            <div className="grid grid-cols-2 gap-4">
+              {[1, 2, 3, 4].map(i => (
                 <div key={i} className="bg-white rounded-xl shadow-sm border p-4 animate-pulse">
                   <div className="h-5 bg-gray-200 rounded w-2/3 mb-2"></div>
                   <div className="h-4 bg-gray-100 rounded w-1/3"></div>
@@ -135,12 +165,12 @@ export default function Dashboard() {
               ))}
             </div>
           ) : groups.length === 0 ? (
-            <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
+            <div className="col-span-2 bg-white rounded-xl shadow-sm border p-8 text-center">
               <p className="text-5xl mb-3">🏠</p>
               <p className="text-gray-500">{t('create_first_group')}</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-4">
               {groups.map(g => (
                 <GroupCard key={g.id} group={g} emoji={getGroupEmoji(g.type)} userId={user?.id} />
               ))}
@@ -152,7 +182,7 @@ export default function Dashboard() {
       {/* FAB - Create Group */}
       <button
         onClick={() => setShowCreate(true)}
-        className="fixed right-4 bottom-24 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-30 active:scale-95 transition"
+        className="fixed right-4 bottom-24 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-30 active:scale-95 transition shadow-emerald-200"
       >
         +
       </button>
@@ -320,10 +350,10 @@ function GroupCard({ group, emoji, userId }) {
   return (
     <Link
       to={`/group/${group.id}`}
-      className="block bg-white rounded-xl shadow-sm border p-4 hover:border-emerald-300 transition active:scale-[0.98]"
+      className="block bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:border-emerald-300 transition transform hover:scale-[1.02] active:scale-[0.98]"
     >
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-xl flex-shrink-0">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
           {emoji}
         </div>
         <div className="flex-1 min-w-0">
@@ -332,16 +362,15 @@ function GroupCard({ group, emoji, userId }) {
         </div>
         <div className="text-right flex-shrink-0">
           {Math.abs(balanceAmount) > 0.01 ? (
-            <span className={`font-bold text-sm ${balanceAmount > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <span className={`font-bold text-lg ${balanceAmount > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
               {balanceAmount > 0 ? '+' : '-'}MX$ {Math.abs(balanceAmount).toFixed(2)}
             </span>
           ) : (
-            <span className="text-xs text-gray-400">
-              {language === 'es' ? 'Saldado ✓' : 'Settled ✓'}
+            <span className="text-xs text-gray-400 font-medium">
+              {language === 'es' ? 'Saldado' : 'Settled'}
             </span>
           )}
         </div>
-        <span className="text-gray-300 text-xl ml-1">›</span>
       </div>
     </Link>
   );

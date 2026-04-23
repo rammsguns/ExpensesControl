@@ -15,7 +15,7 @@ export default function BottomNav() {
   const { language } = useTranslation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-40 safe-area-bottom">
+    <nav className="fixed bottom-0 left-0 right-0 bg-white border-t z-40 safe-area-bottom shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
       <div className="max-w-lg mx-auto flex">
         {tabs.map(tab => {
           const isActive = location.pathname === tab.path;
@@ -23,12 +23,12 @@ export default function BottomNav() {
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`flex-1 flex flex-col items-center py-2 transition ${
-                isActive ? 'text-emerald-600' : 'text-gray-400'
+              className={`flex-1 flex flex-col items-center py-3 transition ${
+                isActive ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'
               }`}
             >
-              <span className="text-xl">{tab.icon}</span>
-              <span className="text-[10px] font-medium mt-0.5">
+              <span className="text-2xl mb-1">{tab.icon}</span>
+              <span className="text-xs font-medium">
                 {language === 'es' ? tab.labelEs : tab.labelEn}
               </span>
             </button>
