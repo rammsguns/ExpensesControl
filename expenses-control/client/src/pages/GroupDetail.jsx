@@ -7,15 +7,16 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import ExpenseCard from '../components/ExpenseCard';
+import { ArrowLeft, Plus, Handshake, Search, Receipt, Pencil, Trash2 } from 'lucide-react';
 
 const CATEGORY_ICONS = {
-  food: { emoji: '🍽️', bg: 'bg-pink-100' },
-  transport: { emoji: '⛽', bg: 'bg-blue-100' },
-  shopping: { emoji: '🛒', bg: 'bg-emerald-100' },
-  home: { emoji: '🏠', bg: 'bg-amber-100' },
-  entertainment: { emoji: '🎉', bg: 'bg-purple-100' },
-  travel: { emoji: '✈️', bg: 'bg-sky-100' },
-  other: { emoji: '🧾', bg: 'bg-gray-100' },
+  food: { icon: Receipt, bg: 'bg-pink-100 text-pink-600' },
+  transport: { icon: Search, bg: 'bg-blue-100 text-blue-600' },
+  shopping: { icon: Receipt, bg: 'bg-emerald-100 text-emerald-600' },
+  home: { icon: Home, bg: 'bg-amber-100 text-amber-600' },
+  entertainment: { icon: Heart, bg: 'bg-purple-100 text-purple-600' },
+  travel: { icon: Plane, bg: 'bg-sky-100 text-sky-600' },
+  other: { icon: MoreHorizontal, bg: 'bg-gray-100 text-gray-600' },
 };
 
 function guessCategory(description) {
@@ -82,8 +83,8 @@ export default function GroupDetail() {
     }
   };
 
-  if (isLoading) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p>Loading...</p></div>;
-  if (!group) return <div className="min-h-screen bg-gray-50 flex items-center justify-center"><p>Group not found</p></div>;
+  if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><p>Loading...</p></div>;
+  if (!group) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><p>Group not found</p></div>;
 
   const myBalance = balances.find(b => b.userId === user?.id);
   const others = balances.filter(b => b.userId !== user?.id);
@@ -97,27 +98,30 @@ export default function GroupDetail() {
   const members = group.members || [];
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
       <div className="max-w-lg mx-auto">
         {/* Group Header */}
-        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 text-white px-4 pt-5 pb-6 -mt-px">
+        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-4 pt-5 pb-6 -mt-px">
           <div className="flex items-center gap-3 mb-1">
             <button onClick={() => navigate('/')} className="flex items-center gap-1 text-white/80 hover:text-white text-2xl font-semibold">
-              ← {language === 'es' ? 'Grupos' : 'Groups'}
+              <ArrowLeft size={24} />
+              {language === 'es' ? 'Grupos' : 'Groups'}
             </button>
-            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-2xl ml-auto" title="Home">🏠</button>
+            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-2xl ml-auto" title="Home">
+              <Home size={24} />
+            </button>
           </div>
           <h1 className="text-2xl font-bold">{group.name}</h1>
           <div className="flex gap-2 mt-2">
             <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">
-              👥 {members.length} {language === 'es' ? 'personas' : 'people'}
+              <Users size={14} /> {members.length} {language === 'es' ? 'personas' : 'people'}
             </span>
             <button
               onClick={() => setShowAddMember(true)}
               className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1 rounded-full transition"
             >
-              + {language === 'es' ? 'Agregar' : 'Add'}
+              <Plus size={14} /> {language === 'es' ? 'Agregar' : 'Add'}
             </button>
           </div>
         </div>
@@ -125,18 +129,18 @@ export default function GroupDetail() {
         {/* Balance Statement */}
         <div className="bg-white border-b px-5 py-5">
           {iOwe.length === 0 && owedMe.length === 0 ? (
-            <p className="text-xl font-semibold text-gray-600">
-              ✅ {language === 'es' ? 'Todo saldado' : 'All settled up'}
+            <p className="text-xl font-semibold text-slate-600">
+              <CheckCircle size={20} className="inline mr-2" /> {language === 'es' ? 'Todo saldado' : 'All settled up'}
             </p>
           ) : (
             <div className="space-y-2">
               {iOwe.map(b => (
-                <p key={b.userId} className="text-lg font-semibold text-red-500">
+                <p key={b.userId} className="text-lg font-semibold text-rose-600">
                   {language === 'es' ? 'Debes a' : 'You owe'} {b.name} <span className="text-xl font-bold text-orange-500">MX$ {Math.abs(b.balance).toFixed(2)}</span>
                 </p>
               ))}
               {owedMe.map(b => (
-                <p key={b.userId} className="text-lg font-semibold text-gray-800">
+                <p key={b.userId} className="text-lg font-semibold text-slate-900">
                   {b.name} {language === 'es' ? 'te debe' : 'owes you'} <span className="text-xl font-bold text-emerald-600">MX$ {b.balance.toFixed(2)}</span>
                 </p>
               ))}
@@ -148,21 +152,21 @@ export default function GroupDetail() {
         <div className="flex gap-3 px-5 py-4 bg-white border-b overflow-x-auto">
           <Link
             to={`/settle/${id}`}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
           >
-            🤝 {language === 'es' ? 'Saldar' : 'Settle up'}
+            <Handshake size={18} className="inline mr-2" /> {language === 'es' ? 'Saldar' : 'Settle up'}
           </Link>
           <button
             onClick={() => setShowBalances(!showBalances)}
-            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
+            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
           >
-            ⚖️ {language === 'es' ? 'Saldos' : 'Balances'}
+            <Scale size={18} className="inline mr-2" /> {language === 'es' ? 'Saldos' : 'Balances'}
           </button>
           <Link
             to={`/add-expense/${id}`}
-            className="bg-white hover:bg-gray-50 text-gray-700 border border-gray-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
+            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
           >
-            💰 {language === 'es' ? 'Totales' : 'Totals'}
+            <Receipt size={18} className="inline mr-2" /> {language === 'es' ? 'Totales' : 'Totals'}
           </Link>
         </div>
 
@@ -171,10 +175,10 @@ export default function GroupDetail() {
           <div className="bg-white border-b px-5 py-4 space-y-3">
             {balances.map(b => (
               <div key={b.userId} className="flex justify-between items-center">
-                <span className="font-semibold text-gray-800 text-base">
+                <span className="font-semibold text-slate-900 text-base">
                   {b.userId === user?.id ? (language === 'es' ? 'Tú' : 'You') : b.name}
                 </span>
-                <span className={`font-bold text-lg ${b.balance > 0.01 ? 'text-emerald-600' : b.balance < -0.01 ? 'text-red-500' : 'text-gray-400'}`}>
+                <span className={`font-bold text-lg ${b.balance > 0.01 ? 'text-emerald-600' : b.balance < -0.01 ? 'text-rose-600' : 'text-slate-400'}`}>
                   {Math.abs(b.balance) <= 0.01
                     ? (language === 'es' ? 'Saldado' : 'Settled')
                     : b.balance > 0
@@ -188,14 +192,14 @@ export default function GroupDetail() {
         )}
 
         {/* Members pills */}
-        <div className="bg-gray-50 px-5 py-4 border-b">
+        <div className="bg-slate-50 px-5 py-4 border-b">
           <div className="flex flex-wrap gap-3">
             {members.map(m => (
-              <div key={m.id} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 border border-gray-200">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-emerald-100 to-emerald-200 flex items-center justify-center text-sm font-bold text-emerald-800">
+              <div key={m.id} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 border border-slate-200">
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-sm font-bold text-indigo-800">
                   {m.name.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-sm font-medium text-gray-800">{m.name}</span>
+                <span className="text-sm font-medium text-slate-900">{m.name}</span>
               </div>
             ))}
           </div>
@@ -204,14 +208,14 @@ export default function GroupDetail() {
         {/* Expenses by Month */}
         <div className="px-4 py-4">
           {expenses.length === 0 ? (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center">
-              <p className="text-5xl mb-3">🧾</p>
-              <p className="text-gray-500">{t('no_expenses')}</p>
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center">
+              <MoreHorizontal size={48} className="text-slate-300 mb-3" />
+              <p className="text-slate-500">{t('no_expenses')}</p>
             </div>
           ) : (
             Object.entries(monthlyExpenses).map(([month, exps]) => (
               <div key={month} className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-500 mb-2">{month}</h3>
+                <h3 className="text-sm font-semibold text-slate-500 mb-2">{month}</h3>
                 <div className="space-y-3">
                   {exps.map(exp => (
                     <ExpenseCard
@@ -241,9 +245,9 @@ export default function GroupDetail() {
       <div className="fixed right-4 bottom-24 flex flex-col gap-3 z-30">
         <Link
           to={`/add-expense/${id}`}
-          className="w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center text-lg font-bold active:scale-95 transition"
+          className="w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center text-lg font-bold active:scale-95 transition"
         >
-          +
+          <Plus size={28} />
         </Link>
       </div>
 
@@ -252,22 +256,22 @@ export default function GroupDetail() {
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
           <form onSubmit={addMember} className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
             <h3 className="text-lg font-bold">{language === 'es' ? 'Agregar miembro' : 'Add member'}</h3>
-            {addError && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{addError}</div>}
+            {addError && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{addError}</div>}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('member_email')}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('member_email')}</label>
               <input
                 type="email"
                 value={memberEmail}
                 onChange={(e) => setMemberEmail(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
                 required
               />
             </div>
             <div className="flex gap-3">
-              <button type="submit" className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2 font-medium">
+              <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 font-medium">
                 {t('save')}
               </button>
-              <button type="button" onClick={() => { setShowAddMember(false); setAddError(''); }} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-4 py-2 font-medium">
+              <button type="button" onClick={() => { setShowAddMember(false); setAddError(''); }} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2 font-medium">
                 {t('cancel')}
               </button>
             </div>
@@ -279,3 +283,6 @@ export default function GroupDetail() {
     </div>
   );
 }
+
+// Import needed for GroupDetail
+import { Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal, Home } from 'lucide-react';

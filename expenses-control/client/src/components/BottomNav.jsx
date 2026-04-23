@@ -1,12 +1,13 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
+import { Home, Users, Clock, User } from 'lucide-react';
 
 const tabs = [
-  { path: '/', icon: '🏠', labelEn: 'Groups', labelEs: 'Grupos' },
-  { path: '/friends', icon: '👥', labelEn: 'Friends', labelEs: 'Amigos' },
-  { path: '/activity', icon: '📋', labelEn: 'Activity', labelEs: 'Actividad' },
-  { path: '/account', icon: '👤', labelEn: 'Account', labelEs: 'Cuenta' },
+  { path: '/', icon: Home, labelEn: 'Groups', labelEs: 'Grupos' },
+  { path: '/friends', icon: Users, labelEn: 'Friends', labelEs: 'Amigos' },
+  { path: '/activity', icon: Clock, labelEn: 'Activity', labelEs: 'Actividad' },
+  { path: '/account', icon: User, labelEn: 'Account', labelEs: 'Cuenta' },
 ];
 
 export default function BottomNav() {
@@ -24,10 +25,10 @@ export default function BottomNav() {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={`flex-1 flex flex-col items-center py-3 transition ${
-                isActive ? 'text-emerald-600' : 'text-gray-400 hover:text-gray-600'
+                isActive ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
-              <span className="text-2xl mb-1">{tab.icon}</span>
+              <tab.icon size={24} className="mb-1" />
               <span className="text-xs font-medium">
                 {language === 'es' ? tab.labelEs : tab.labelEn}
               </span>

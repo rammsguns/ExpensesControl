@@ -5,6 +5,7 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import { ArrowLeft, Home, Pencil, Receipt } from 'lucide-react';
 
 export default function EditExpense() {
   const { groupId, expenseId } = useParams();
@@ -142,43 +143,43 @@ export default function EditExpense() {
     setLoading(false);
   };
 
-  if (isLoading) return (<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p>Loading...</p></div>);
+  if (isLoading) return (<div className="min-h-screen bg-slate-50 flex items-center justify-center"><p>Loading...</p></div>);
 
-  if (!expense) return (<div className="min-h-screen bg-gray-50 flex items-center justify-center"><p>Expense not found</p></div>);
+  if (!expense) return (<div className="min-h-screen bg-slate-50 flex items-center justify-center"><p>Expense not found</p></div>);
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-4">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold" title={t('cancel')}>
-            ←
+          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold" title={t('cancel')}>
+            <ArrowLeft size={24} />
           </button>
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-2xl" title="Home">
-            🏠
+          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+            <Home size={24} />
           </button>
         </div>
-        <h2 className="text-xl font-bold text-gray-800 mb-4">✏️ {t('edit_expense')}</h2>
+        <h2 className="text-xl font-bold text-slate-900 mb-4"> <Pencil size={24} className="inline mr-2" /> {t('edit_expense')}</h2>
 
-        {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
+        {error && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border p-4 space-y-4">
+        <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('description')}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('description')}</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               {t('amount')} (MX$)
               {splitType === 'exact' && (
-                <span className="text-xs text-gray-400 ml-1 font-normal">
+                <span className="text-xs text-slate-400 ml-1 font-normal">
                   (auto-calculated from splits)
                 </span>
               )}
@@ -199,29 +200,29 @@ export default function EditExpense() {
                   setManualAmount(false);
                 }
               }}
-              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none ${
-                splitType === 'exact' && !manualAmount ? 'bg-gray-50' : ''
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none ${
+                splitType === 'exact' && !manualAmount ? 'bg-slate-50' : ''
               }`}
               required
             />
             {splitType === 'exact' && (
-              <p className="text-xs text-gray-500 mt-1">
-                Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+              <p className="text-xs text-slate-500 mt-1">
+                Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
                   MX${splitTotal.toFixed(2)}
                 </span>
                 {Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 && (
-                  <span className="text-red-500 ml-1">⚠️ Does not match total</span>
+                  <span className="text-rose-500 ml-1">Does not match total</span>
                 )}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('paid_by')}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('paid_by')}</label>
             <select
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
             >
               {members.map(m => (
                 <option key={m.id} value={m.id}>{m.name} {m.id === user?.id ? '(You)' : ''}</option>
@@ -230,7 +231,7 @@ export default function EditExpense() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('split_type')}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('split_type')}</label>
             <div className="grid grid-cols-2 gap-2">
               {['equal', 'percentage', 'exact'].map(type => (
                 <button
@@ -239,8 +240,8 @@ export default function EditExpense() {
                   onClick={() => setSplitType(type)}
                   className={`px-3 py-2 rounded-lg text-sm font-medium border transition ${
                     splitType === type
-                      ? 'bg-emerald-500 text-white border-emerald-500'
-                      : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
                   }`}
                 >
                   {t(type)}
@@ -250,15 +251,15 @@ export default function EditExpense() {
           </div>
 
           {splitType === 'equal' && perPerson && (
-            <p className="text-sm text-gray-500">{perPerson} {t('per_person')}</p>
+            <p className="text-sm text-slate-500">{perPerson} {t('per_person')}</p>
           )}
 
           {splitType !== 'equal' && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">{t('splits')}</p>
+              <p className="text-sm font-medium text-slate-700">{t('splits')}</p>
               {splits.map((s, i) => (
                 <div key={s.userId} className="flex items-center gap-2">
-                  <span className="text-sm text-gray-600 w-24 truncate">{s.name || `User ${s.userId}`}</span>
+                  <span className="text-sm text-slate-600 w-24 truncate">{s.name || `User ${s.userId}`}</span>
                   <input
                     type="number"
                     step="0.01"
@@ -272,18 +273,18 @@ export default function EditExpense() {
                       newSplits[i].value = e.target.value;
                       setSplits(newSplits);
                     }}
-                    className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="flex-1 border rounded-lg px-3 py-1.5 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
                     required
                   />
                 </div>
               ))}
               {splitType === 'percentage' && (
                 <p className="text-xs mt-1">
-                  Total: <span className={Math.abs(splitTotal - 100) > 0.1 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+                  Total: <span className={Math.abs(splitTotal - 100) > 0.1 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
                     {splitTotal.toFixed(1)}%
                   </span>
                   {Math.abs(splitTotal - 100) > 0.1 && (
-                    <span className="text-red-500 ml-1">⚠️ Must equal 100%</span>
+                    <span className="text-rose-500 ml-1">Must equal 100%</span>
                   )}
                 </p>
               )}
@@ -294,14 +295,14 @@ export default function EditExpense() {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
+              className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
             >
               {loading ? '...' : t('save')}
             </button>
             <button
               type="button"
               onClick={() => navigate(-1)}
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-4 py-2.5 font-medium"
+              className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2.5 font-medium"
             >
               {t('cancel')}
             </button>

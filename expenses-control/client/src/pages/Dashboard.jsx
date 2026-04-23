@@ -6,12 +6,13 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import { Search, PlusCircle, Users, Handshake, Home, Plus, Plane, Heart, MoreHorizontal } from 'lucide-react';
 
 const GROUP_TYPES = [
-  { id: 'home', emoji: '🏠', labelEn: 'Home', labelEs: 'Hogar' },
-  { id: 'trip', emoji: '✈️', labelEs: 'Viaje', labelEn: 'Trip' },
-  { id: 'couple', emoji: '💑', labelEs: 'Pareja', labelEn: 'Couple' },
-  { id: 'other', emoji: '📋', labelEs: 'Otro', labelEn: 'Other' },
+  { id: 'home', icon: Home, labelEn: 'Home', labelEs: 'Hogar' },
+  { id: 'trip', icon: Plane, labelEs: 'Viaje', labelEn: 'Trip' },
+  { id: 'couple', icon: Heart, labelEs: 'Pareja', labelEn: 'Couple' },
+  { id: 'other', icon: MoreHorizontal, labelEs: 'Otro', labelEn: 'Other' },
 ];
 
 export default function Dashboard() {
@@ -87,15 +88,15 @@ export default function Dashboard() {
   };
 
   const userBalance = balances.find(b => b.userId === user?.id);
-  const getGroupEmoji = (type) => GROUP_TYPES.find(g => g.id === type)?.emoji || '📋';
+  const getGroupIcon = (type) => GROUP_TYPES.find(g => g.id === type)?.icon || MoreHorizontal;
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-5">
         {/* Total Balance */}
-        <div className="bg-gradient-to-br from-emerald-600 to-emerald-700 rounded-2xl shadow-lg p-5 text-white mb-4">
-          <h3 className="font-semibold text-emerald-100 mb-2 text-sm">{t('total_balance')}</h3>
+        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-5 text-white mb-4">
+          <h3 className="font-semibold text-indigo-100 mb-2 text-sm">{t('total_balance')}</h3>
           {userBalance && (
             <div className="text-4xl font-bold mb-2">
               MX$ {Math.abs(userBalance.balance).toFixed(2)}
@@ -108,41 +109,49 @@ export default function Dashboard() {
 
         {/* Quick Actions */}
         <div className="mb-6">
-          <h3 className="font-semibold text-gray-800 text-lg mb-3">{t('quick_actions')}</h3>
+          <h3 className="font-semibold text-slate-900 text-lg mb-3">{t('quick_actions')}</h3>
           <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
             <Link
               to="/search"
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="text-4xl">🔍</span>
-              <span className="text-gray-600 font-medium">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <Search size={24} />
+              </div>
+              <span className="text-slate-600 font-medium">
                 {language === 'es' ? 'Buscar' : 'Search'}
               </span>
             </Link>
             <button
               onClick={() => navigate('/add-expense')}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="text-4xl">📝</span>
-              <span className="text-gray-600 font-medium">
+              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
+                <PlusCircle size={24} />
+              </div>
+              <span className="text-slate-600 font-medium">
                 {language === 'es' ? 'Gasto' : 'Expense'}
               </span>
             </button>
             <button
               onClick={() => setShowCreate(true)}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="text-4xl">➕</span>
-              <span className="text-gray-600 font-medium">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <Plus size={24} />
+              </div>
+              <span className="text-slate-600 font-medium">
                 {t('create_group')}
               </span>
             </button>
             <Link
               to={`/settle/${userBalance?.groupId || 'groups'}`}
-              className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col items-center justify-center gap-2 hover:border-emerald-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
+              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
             >
-              <span className="text-4xl">🤝</span>
-              <span className="text-gray-600 font-medium">
+              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
+                <Handshake size={24} />
+              </div>
+              <span className="text-slate-600 font-medium">
                 {language === 'es' ? 'Saldar' : 'Settle'}
               </span>
             </Link>
@@ -151,7 +160,7 @@ export default function Dashboard() {
 
         {/* Your Groups */}
         <div>
-          <h3 className="font-semibold text-gray-800 text-lg mb-3">
+          <h3 className="font-semibold text-slate-900 text-lg mb-3">
             {language === 'es' ? 'Tus Grupos' : 'Your Groups'}
           </h3>
 
@@ -159,20 +168,22 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-4">
               {[1, 2, 3, 4].map(i => (
                 <div key={i} className="bg-white rounded-xl shadow-sm border p-4 animate-pulse">
-                  <div className="h-5 bg-gray-200 rounded w-2/3 mb-2"></div>
-                  <div className="h-4 bg-gray-100 rounded w-1/3"></div>
+                  <div className="h-5 bg-slate-200 rounded w-2/3 mb-2"></div>
+                  <div className="h-4 bg-slate-100 rounded w-1/3"></div>
                 </div>
               ))}
             </div>
           ) : groups.length === 0 ? (
             <div className="col-span-2 bg-white rounded-xl shadow-sm border p-8 text-center">
-              <p className="text-5xl mb-3">🏠</p>
-              <p className="text-gray-500">{t('create_first_group')}</p>
+              <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center text-3xl mb-3 text-indigo-600">
+                <Home size={40} />
+              </div>
+              <p className="text-slate-500">{t('create_first_group')}</p>
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {groups.map(g => (
-                <GroupCard key={g.id} group={g} emoji={getGroupEmoji(g.type)} userId={user?.id} />
+                <GroupCard key={g.id} group={g} icon={getGroupIcon(g.type)} userId={user?.id} />
               ))}
             </div>
           )}
@@ -182,9 +193,9 @@ export default function Dashboard() {
       {/* FAB - Create Group */}
       <button
         onClick={() => setShowCreate(true)}
-        className="fixed right-4 bottom-24 w-14 h-14 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-30 active:scale-95 transition shadow-emerald-200"
+        className="fixed right-4 bottom-24 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-30 active:scale-95 transition shadow-indigo-200"
       >
-        +
+        <Plus size={28} />
       </button>
 
       {/* Create Group Modal */}
@@ -192,11 +203,11 @@ export default function Dashboard() {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
           <div className="bg-white rounded-t-2xl sm:rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
             <div className="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center rounded-t-2xl">
-              <button onClick={() => { setShowCreate(false); setMemberList([]); }} className="text-gray-500 font-medium">
+              <button onClick={() => { setShowCreate(false); setMemberList([]); }} className="text-slate-500 font-medium">
                 {t('cancel')}
               </button>
-              <h3 className="font-bold text-gray-800">{t('create_group')}</h3>
-              <button onClick={createGroup} disabled={creating || !groupName.trim()} className="text-emerald-600 font-bold disabled:opacity-40">
+              <h3 className="font-bold text-slate-900">{t('create_group')}</h3>
+              <button onClick={createGroup} disabled={creating || !groupName.trim()} className="text-indigo-600 font-bold disabled:opacity-40">
                 {creating ? '...' : t('save')}
               </button>
             </div>
@@ -204,7 +215,7 @@ export default function Dashboard() {
             <div className="p-4 space-y-5">
               {/* Group Type */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-slate-700 mb-2">
                   {language === 'es' ? 'Tipo de grupo' : 'Group type'}
                 </label>
                 <div className="grid grid-cols-4 gap-2">
@@ -215,12 +226,14 @@ export default function Dashboard() {
                       onClick={() => setGroupType(type.id)}
                       className={`flex flex-col items-center py-3 px-2 rounded-xl border-2 transition ${
                         groupType === type.id
-                          ? 'border-emerald-500 bg-emerald-50'
-                          : 'border-gray-100 bg-gray-50 hover:border-gray-200'
+                          ? 'border-indigo-500 bg-indigo-50'
+                          : 'border-slate-200 bg-slate-50 hover:border-slate-300'
                       }`}
                     >
-                      <span className="text-2xl mb-1">{type.emoji}</span>
-                      <span className="text-xs font-medium text-gray-700">
+                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm">
+                        <type.icon size={20} className="text-indigo-600" />
+                      </div>
+                      <span className="text-xs font-medium text-slate-700">
                         {language === 'es' ? type.labelEs : type.labelEn}
                       </span>
                     </button>
@@ -229,30 +242,30 @@ export default function Dashboard() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('group_name')}</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('group_name')}</label>
                 <input
                   type="text"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   placeholder={language === 'es' ? 'Ej: Casa volcanes credito' : 'e.g. House expenses'}
-                  className="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-base"
+                  className="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
                   autoFocus
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">{t('description')}</label>
+                <label className="block text-sm font-medium text-slate-700 mb-1">{t('description')}</label>
                 <input
                   type="text"
                   value={groupDesc}
                   onChange={(e) => setGroupDesc(e.target.value)}
                   placeholder={language === 'es' ? 'Descripción opcional' : 'Optional description'}
-                  className="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-base"
+                  className="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-slate-700 mb-1">
                   {language === 'es' ? 'Agregar miembros' : 'Add members'}
                 </label>
                 <div className="flex gap-2">
@@ -262,19 +275,19 @@ export default function Dashboard() {
                     onChange={(e) => { setMemberEmail(e.target.value); setMemberError(''); }}
                     onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); }}}
                     placeholder={language === 'es' ? 'correo@ejemplo.com' : 'email@example.com'}
-                    className="flex-1 border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none text-base"
+                    className="flex-1 border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
                   />
-                  <button type="button" onClick={addMember} className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium text-sm flex-shrink-0">
-                    +
+                  <button type="button" onClick={addMember} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium text-sm flex-shrink-0">
+                    <Plus size={20} />
                   </button>
                 </div>
-                {memberError && <p className="text-red-500 text-xs mt-1">{memberError}</p>}
+                {memberError && <p className="text-rose-500 text-xs mt-1">{memberError}</p>}
               </div>
 
               {/* Quick-add from existing friends */}
               {existingFriends.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
                     {language === 'es' ? 'Amigos recientes' : 'Recent friends'}
                   </label>
                   <div className="flex flex-wrap gap-2">
@@ -285,12 +298,12 @@ export default function Dashboard() {
                           key={f.id}
                           type="button"
                           onClick={() => setMemberList(prev => [...prev, { email: f.email, name: f.name }])}
-                          className="flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-full px-3 py-1.5 transition active:scale-95"
+                          className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full px-3 py-1.5 transition active:scale-95"
                         >
-                          <div className="w-5 h-5 rounded-full bg-emerald-200 flex items-center justify-center text-emerald-800 font-bold text-[10px]">
+                          <div className="w-5 h-5 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold text-[10px]">
                             {f.name.charAt(0).toUpperCase()}
                           </div>
-                          <span className="text-xs font-medium text-emerald-800">{f.name}</span>
+                          <span className="text-xs font-medium text-indigo-800">{f.name}</span>
                         </button>
                       ))
                     }
@@ -302,26 +315,28 @@ export default function Dashboard() {
               {memberList.length > 0 && (
                 <div className="space-y-2">
                   {memberList.map(m => (
-                    <div key={m.email} className="flex items-center justify-between bg-gray-50 rounded-lg px-3 py-2.5">
+                    <div key={m.email} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2.5">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
                           {m.name.charAt(0).toUpperCase()}
                         </div>
-                        <span className="text-sm text-gray-800">{m.name}</span>
-                        <span className="text-xs text-gray-400">{m.email}</span>
+                        <span className="text-sm text-slate-900">{m.name}</span>
+                        <span className="text-xs text-slate-400">{m.email}</span>
                       </div>
-                      <button onClick={() => removeMember(m.email)} className="text-red-400 hover:text-red-600 text-lg">×</button>
+                      <button onClick={() => removeMember(m.email)} className="text-rose-400 hover:text-rose-600 text-lg">
+                        <MoreHorizontal size={20} />
+                      </button>
                     </div>
                   ))}
                 </div>
               )}
 
-              <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 rounded-lg px-3 py-2.5">
-                <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700 font-bold text-sm">
+              <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 rounded-lg px-3 py-2.5">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
                   {user?.name?.charAt(0).toUpperCase()}
                 </div>
-                <span className="text-gray-800">{user?.name}</span>
-                <span className="text-xs text-emerald-600 ml-auto">
+                <span className="text-slate-900">{user?.name}</span>
+                <span className="text-xs text-indigo-600 ml-auto">
                   {language === 'es' ? '(tú — agregado automáticamente)' : '(you — added automatically)'}
                 </span>
               </div>
@@ -336,7 +351,7 @@ export default function Dashboard() {
 }
 
 // Group card with balance — uses its own query per group
-function GroupCard({ group, emoji, userId }) {
+function GroupCard({ group, icon, userId }) {
   const { language } = useTranslation();
 
   const { data: balances = [] } = useQuery({
@@ -350,23 +365,23 @@ function GroupCard({ group, emoji, userId }) {
   return (
     <Link
       to={`/group/${group.id}`}
-      className="block bg-white rounded-xl shadow-sm border border-gray-100 p-5 hover:border-emerald-300 transition transform hover:scale-[1.02] active:scale-[0.98]"
+      className="block bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:border-indigo-300 transition transform hover:scale-[1.02] active:scale-[0.98]"
     >
       <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-emerald-50 to-emerald-100 flex items-center justify-center text-2xl flex-shrink-0">
-          {emoji}
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center text-2xl flex-shrink-0">
+          <icon size={32} className="text-indigo-600" />
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-gray-800 truncate">{group.name}</h4>
-          {group.description && <p className="text-sm text-gray-500 truncate">{group.description}</p>}
+          <h4 className="font-medium text-slate-900 truncate">{group.name}</h4>
+          {group.description && <p className="text-sm text-slate-500 truncate">{group.description}</p>}
         </div>
         <div className="text-right flex-shrink-0">
           {Math.abs(balanceAmount) > 0.01 ? (
-            <span className={`font-bold text-lg ${balanceAmount > 0 ? 'text-emerald-600' : 'text-red-500'}`}>
+            <span className={`font-bold text-lg ${balanceAmount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {balanceAmount > 0 ? '+' : '-'}MX$ {Math.abs(balanceAmount).toFixed(2)}
             </span>
           ) : (
-            <span className="text-xs text-gray-400 font-medium">
+            <span className="text-xs text-slate-400 font-medium">
               {language === 'es' ? 'Saldado' : 'Settled'}
             </span>
           )}

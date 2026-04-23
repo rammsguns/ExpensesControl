@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
+import { ArrowLeft, Home, Shield } from 'lucide-react';
 
 export default function TwoFASetup() {
   const { t, language } = useTranslation();
@@ -47,32 +48,36 @@ export default function TwoFASetup() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
-          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold">←</button>
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-2xl" title="Home">🏠</button>
-          <h1 className="text-xl font-bold text-gray-800">
+          <button onClick={() => navigate(-1)} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold">
+            <ArrowLeft size={24} />
+          </button>
+          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+            <Home size={24} />
+          </button>
+          <h1 className="text-xl font-bold text-slate-900">
             {language === 'es' ? 'Autenticación de dos factores' : 'Two-Factor Authentication'}
           </h1>
         </div>
 
         {step === 'loading' && (
           <div className="text-center py-12">
-            <div className="animate-spin w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"></div>
-            <p className="text-gray-500">{t('loading')}</p>
+            <div className="animate-spin w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+            <p className="text-slate-500">{t('loading')}</p>
           </div>
         )}
 
         {step === 'setup' && (
           <div className="space-y-6">
             {/* Instructions */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h2 className="font-semibold text-gray-800 mb-3">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <h2 className="font-semibold text-slate-900 mb-3">
                 {language === 'es' ? 'Paso 1: Escanea el código QR' : 'Step 1: Scan the QR code'}
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-slate-500 mb-4">
                 {language === 'es'
                   ? 'Abre tu app de autenticación (Google Authenticator, Authy, etc.) y escanea este código:'
                   : 'Open your authenticator app (Google Authenticator, Authy, etc.) and scan this code:'}
@@ -81,25 +86,25 @@ export default function TwoFASetup() {
               {/* QR Code */}
               {qr && (
                 <div className="flex justify-center mb-4">
-                  <img src={qr} alt="2FA QR Code" className="w-48 h-48 rounded-lg border" />
+                  <img src={qr} alt="2FA QR Code" className="w-48 h-48 rounded-lg border border-slate-200" />
                 </div>
               )}
 
               {/* Manual entry key */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <p className="text-xs text-gray-500 mb-1">
+              <div className="bg-slate-50 rounded-lg p-4">
+                <p className="text-xs text-slate-500 mb-1">
                   {language === 'es' ? 'Clave manual:' : 'Manual entry key:'}
                 </p>
-                <p className="font-mono text-sm text-gray-800 break-all select-all">{secret}</p>
+                <p className="font-mono text-sm text-slate-900 break-all select-all">{secret}</p>
               </div>
             </div>
 
             {/* Verify step */}
-            <div className="bg-white rounded-xl shadow-sm border p-6">
-              <h2 className="font-semibold text-gray-800 mb-3">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+              <h2 className="font-semibold text-slate-900 mb-3">
                 {language === 'es' ? 'Paso 2: Verifica el código' : 'Step 2: Verify the code'}
               </h2>
-              <p className="text-sm text-gray-500 mb-4">
+              <p className="text-sm text-slate-500 mb-4">
                 {language === 'es'
                   ? 'Ingresa el código de 6 dígitos de tu app de autenticación:'
                   : 'Enter the 6-digit code from your authenticator app:'}
@@ -114,15 +119,15 @@ export default function TwoFASetup() {
                   value={code}
                   onChange={(e) => { setCode(e.target.value.replace(/\D/g, '')); setError(''); }}
                   placeholder="000000"
-                  className="w-full text-center text-3xl tracking-[0.5em] font-mono border rounded-xl px-4 py-4 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none"
+                  className="w-full text-center text-3xl tracking-[0.5em] font-mono border rounded-xl px-4 py-4 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
                 />
 
-                {error && <p className="text-red-500 text-sm text-center">{error}</p>}
+                {error && <p className="text-rose-500 text-sm text-center">{error}</p>}
 
                 <button
                   type="submit"
                   disabled={code.length !== 6 || loading}
-                  className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-4 py-3 font-semibold disabled:opacity-40 transition"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 py-3 font-semibold disabled:opacity-40 transition"
                 >
                   {loading ? '...' : t('2fa_enable')}
                 </button>
@@ -132,19 +137,19 @@ export default function TwoFASetup() {
         )}
 
         {step === 'done' && (
-          <div className="bg-white rounded-xl shadow-sm border p-8 text-center">
-            <div className="text-5xl mb-3">✅</div>
-            <h2 className="text-xl font-bold text-gray-800 mb-2">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
+            <Shield size={64} className="text-indigo-600 mb-3" />
+            <h2 className="text-xl font-bold text-slate-900 mb-2">
               {language === 'es' ? '¡2FA activado!' : '2FA Enabled!'}
             </h2>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-slate-500 mb-6">
               {language === 'es'
                 ? 'Tu cuenta ahora está protegida con autenticación de dos factores.'
                 : 'Your account is now protected with two-factor authentication.'}
             </p>
             <button
               onClick={() => navigate('/account')}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl px-6 py-3 font-semibold transition"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-6 py-3 font-semibold transition"
             >
               {language === 'es' ? 'Volver a mi cuenta' : 'Back to my account'}
             </button>

@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '../i18n';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import { ArrowLeft, Home, Receipt, DollarSign } from 'lucide-react';
 
 export default function AddExpense() {
   const { groupId } = useParams();
@@ -121,39 +122,39 @@ export default function AddExpense() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-gray-500 hover:text-gray-700 text-2xl font-semibold" title={t('cancel')}>
-            ←
+          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold" title={t('cancel')}>
+            <ArrowLeft size={24} />
           </button>
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-2xl" title="Home">
-            🏠
+          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+            <Home size={24} />
           </button>
         </div>
-        <h2 className="text-2xl font-bold text-gray-800">💰 {t('add_expense')}</h2>
+        <h2 className="text-2xl font-bold text-slate-900"> <Receipt size={28} className="inline mr-2" /> {t('add_expense')}</h2>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{error}</div>}
+          {error && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{error}</div>}
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('description')}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('description')}</label>
             <input
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Dinner, Groceries, etc."
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
               required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-slate-700 mb-1">
               {t('amount')} (MXN)
               {splitType === 'exact' && (
-                <span className="text-xs text-gray-400 ml-1 font-normal">
+                <span className="text-xs text-slate-400 ml-1 font-normal">
                   (auto-calculated from splits)
                 </span>
               )}
@@ -175,29 +176,29 @@ export default function AddExpense() {
                 }
               }}
               placeholder="0.00"
-              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none ${
-                splitType === 'exact' && !manualAmount ? 'bg-gray-50' : ''
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none ${
+                splitType === 'exact' && !manualAmount ? 'bg-slate-50' : ''
               }`}
               required
             />
             {splitType === 'exact' && (
-              <p className="text-xs text-gray-500 mt-1">
-                Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+              <p className="text-xs text-slate-500 mt-1">
+                Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
                   MX${splitTotal.toFixed(2)}
                 </span>
                 {Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 && (
-                  <span className="text-red-500 ml-1">⚠️ Does not match total</span>
+                  <span className="text-rose-500 ml-1">Does not match total</span>
                 )}
               </p>
             )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('paid_by')}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('paid_by')}</label>
             <select
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
               required
             >
               {members.map(m => (
@@ -207,7 +208,7 @@ export default function AddExpense() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">{t('split_type')}</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1">{t('split_type')}</label>
             <div className="flex gap-2">
               {['equal', 'percentage', 'exact'].map(type => (
                 <button
@@ -216,8 +217,8 @@ export default function AddExpense() {
                   onClick={() => setSplitType(type)}
                   className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition ${
                     splitType === type
-                      ? 'bg-emerald-500 text-white border-emerald-500'
-                      : 'bg-white text-gray-600 border-gray-200 hover:border-emerald-300'
+                      ? 'bg-indigo-600 text-white border-indigo-600'
+                      : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'
                   }`}
                 >
                   {t(type)}
@@ -228,37 +229,37 @@ export default function AddExpense() {
 
           {/* Equal split info */}
           {splitType === 'equal' && perPerson && (
-            <div className="bg-emerald-50 rounded-lg p-3 text-sm">
-              <span className="text-emerald-700 font-medium">{t('per_person')}: ${perPerson}</span>
+            <div className="bg-indigo-50 rounded-lg p-3 text-sm">
+              <span className="text-indigo-700 font-medium">{t('per_person')}: ${perPerson}</span>
             </div>
           )}
 
           {/* Custom splits */}
           {splitType !== 'equal' && (
             <div className="space-y-2">
-              <p className="text-sm font-medium text-gray-700">
+              <p className="text-sm font-medium text-slate-700">
                 {splitType === 'exact' ? 'Enter each person\'s share:' : t('splits')}
               </p>
               {splits.map((s, i) => (
                 <div key={s.userId} className="flex items-center gap-3">
-                  <span className="text-sm text-gray-700 w-24">{s.name || members.find(m => m.id === s.userId)?.name}</span>
+                  <span className="text-sm text-slate-700 w-24">{s.name || members.find(m => m.id === s.userId)?.name}</span>
                   <input
                     type="number"
                     step="0.01"
                     value={s.value}
                     onChange={(e) => updateSplit(i, e.target.value)}
                     placeholder={splitType === 'percentage' ? '%' : 'MX$'}
-                    className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none text-sm"
+                    className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
                   />
                 </div>
               ))}
               {splitType === 'percentage' && (
                 <p className="text-xs mt-1">
-                  Total: <span className={Math.abs(splitTotal - 100) > 0.1 ? 'text-red-500 font-bold' : 'text-emerald-600 font-bold'}>
+                  Total: <span className={Math.abs(splitTotal - 100) > 0.1 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
                     {splitTotal.toFixed(1)}%
                   </span>
                   {Math.abs(splitTotal - 100) > 0.1 && (
-                    <span className="text-red-500 ml-1">⚠️ Must equal 100%</span>
+                    <span className="text-rose-500 ml-1">Must equal 100%</span>
                   )}
                 </p>
               )}
@@ -268,7 +269,7 @@ export default function AddExpense() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
           >
             {loading ? '...' : t('save')}
           </button>
@@ -276,7 +277,7 @@ export default function AddExpense() {
           <button
             type="button"
             onClick={() => navigate(`/group/${groupId}`)}
-            className="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg px-4 py-2.5 font-medium"
+            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2.5 font-medium"
           >
             {t('cancel')}
           </button>

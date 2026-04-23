@@ -5,6 +5,7 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
+import { ArrowLeft, Home, Handshake, Receipt } from 'lucide-react';
 
 export default function SettleUp() {
   const { groupId } = useParams();
@@ -65,31 +66,35 @@ export default function SettleUp() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-slate-50">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-emerald-600 text-2xl font-semibold">← {t('dashboard')}</button>
-          <button onClick={() => navigate('/')} className="text-gray-400 hover:text-gray-600 text-2xl" title="Home">🏠</button>
+          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold">
+            <ArrowLeft size={24} /> {t('dashboard')}
+          </button>
+          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+            <Home size={24} />
+          </button>
         </div>
 
-        <h2 className="text-2xl font-bold text-gray-800">🤝 {t('settle_up')}</h2>
+        <h2 className="text-2xl font-bold text-slate-900"> <Handshake size={28} className="inline mr-2" /> {t('settle_up')}</h2>
 
         {/* Simplified Debts */}
-        <div className="mt-6 bg-white rounded-xl shadow-sm border p-4">
-          <h3 className="font-semibold text-gray-700 mb-3">{t('simplified_debts')}</h3>
+        <div className="mt-6 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <h3 className="font-semibold text-slate-700 mb-3">{t('simplified_debts')}</h3>
           {plan.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">✅ All settled up!</p>
+            <p className="text-slate-400 text-center py-4"><CheckCircle size={20} className="inline mr-2" /> All settled up!</p>
           ) : (
             <div className="space-y-3">
               {plan.map((p, i) => (
-                <div key={i} className="flex justify-between items-center bg-gray-50 rounded-lg p-3">
+                <div key={i} className="flex justify-between items-center bg-slate-50 rounded-lg p-3">
                   <div className="text-sm">
-                    <span className="font-medium text-red-600">{p.fromName}</span>
-                    <span className="text-gray-500 mx-2">→</span>
+                    <span className="font-medium text-rose-600">{p.fromName}</span>
+                    <span className="text-slate-500 mx-2">→</span>
                     <span className="font-medium text-emerald-600">{p.toName}</span>
                   </div>
-                  <span className="font-bold text-gray-800">${p.amount.toFixed(2)}</span>
+                  <span className="font-bold text-slate-900">${p.amount.toFixed(2)}</span>
                 </div>
               ))}
             </div>
@@ -97,16 +102,16 @@ export default function SettleUp() {
         </div>
 
         {/* Record Settlement */}
-        <div className="mt-4 bg-white rounded-xl shadow-sm border p-4">
-          <h3 className="font-semibold text-gray-700 mb-3">{t('record_settlement')}</h3>
+        <div className="mt-4 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <h3 className="font-semibold text-slate-700 mb-3">{t('record_settlement')}</h3>
           <form onSubmit={handleSettle} className="space-y-3">
-            {error && <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">{error}</div>}
+            {error && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{error}</div>}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('from')}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('from')}</label>
               <select
                 value={fromUserId}
                 onChange={(e) => setFromUserId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
                 required
               >
                 <option value="">Select...</option>
@@ -114,11 +119,11 @@ export default function SettleUp() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('to')}</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('to')}</label>
               <select
                 value={toUserId}
                 onChange={(e) => setToUserId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
                 required
               >
                 <option value="">Select...</option>
@@ -126,20 +131,20 @@ export default function SettleUp() {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">{t('amount')} (MXN)</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1">{t('amount')} (MXN)</label>
               <input
                 type="number"
                 step="0.01"
                 value={settleAmount}
                 onChange={(e) => setSettleAmount(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
             >
               {loading ? '...' : t('settle')}
             </button>
@@ -147,17 +152,17 @@ export default function SettleUp() {
         </div>
 
         {/* Settlement History */}
-        <div className="mt-4 bg-white rounded-xl shadow-sm border p-4">
-          <h3 className="font-semibold text-gray-700 mb-3">{t('settlement_history')}</h3>
+        <div className="mt-4 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+          <h3 className="font-semibold text-slate-700 mb-3">{t('settlement_history')}</h3>
           {settlements.length === 0 ? (
-            <p className="text-gray-400 text-center py-4">{t('no_settlements')}</p>
+            <p className="text-slate-400 text-center py-4">{t('no_settlements')}</p>
           ) : (
             <div className="space-y-2">
               {settlements.map(s => (
-                <div key={s.id} className="flex justify-between items-center bg-gray-50 rounded-lg p-3 text-sm">
+                <div key={s.id} className="flex justify-between items-center bg-slate-50 rounded-lg p-3 text-sm">
                   <span>
                     <span className="font-medium">{s.from_name || `User ${s.from_user_id}`}</span>
-                    <span className="text-gray-400 mx-1">→</span>
+                    <span className="text-slate-400 mx-1">→</span>
                     <span className="font-medium">{s.to_name || `User ${s.to_user_id}`}</span>
                   </span>
                   <span className="font-bold text-emerald-600">${parseFloat(s.amount).toFixed(2)}</span>
@@ -170,3 +175,6 @@ export default function SettleUp() {
     </div>
   );
 }
+
+// Import needed for SettleUp
+import { CheckCircle } from 'lucide-react';
