@@ -80,14 +80,14 @@ export default function Dashboard() {
       for (const member of memberList) {
         try { await api.post(`/groups/${groupId}/members`, { email: member.email }); } catch {}
       }
-      toast.success(t('group_created'));
       setShowCreate(false);
+      toast.success(t('group_created'));
       setGroupName(''); setGroupDesc(''); setGroupType('home');
       setMemberList([]); setMemberEmail('');
       qc.invalidateQueries({ queryKey: ['groups'] });
       navigate(`/group/${groupId}`);
     } catch (err) {
-      console.error('Failed to create group:', err);
+      toast.error(err.response?.data?.error || t('error'));
     }
     setCreating(false);
   };
@@ -171,21 +171,11 @@ export default function Dashboard() {
           </h3>
 
           {groupsLoading ? (
-            <div className="grid grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map(i => (
-                <div key={i} className="bg-white rounded-xl shadow-sm border p-4 animate-pulse">
-                  <div className="h-5 bg-slate-200 rounded w-2/3 mb-2"></div>
-                  <div className="h-4 bg-slate-100 rounded w-1/3"></div>
-                </div>
-              ))}
+            <div className="max-w-lg mx-auto px-4 py-6">
+              <SkeletonLoaders type="groupCard" count={3} />
             </div>
           ) : groups.length === 0 ? (
-            <div className="col-span-2 bg-white rounded-xl shadow-sm border p-8 text-center">
-              <div className="w-20 h-20 rounded-full bg-indigo-50 flex items-center justify-center text-3xl mb-3 text-indigo-600">
-                <Home size={40} />
-              </div>
-              <p className="text-slate-500">{t('create_first_group')}</p>
-            </div>
+          <EmptyStates type="groups" onAction={() => setShowCreate(true)} />
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {groups.map(g => (
@@ -214,7 +204,7 @@ export default function Dashboard() {
               </button>
               <h3 className="font-bold text-slate-900">{t('create_group')}</h3>
               <button onClick={createGroup} disabled={creating || !groupName.trim()} className="text-indigo-600 font-bold disabled:opacity-40">
-                {creating ? '...' : t('save')}
+                {creating ? t('creating') : t('create')}
               </button>
             </div>
 
