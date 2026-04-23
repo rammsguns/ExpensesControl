@@ -175,7 +175,7 @@ export default function Dashboard() {
               <SkeletonLoaders type="groupCard" count={3} />
             </div>
           ) : groups.length === 0 ? (
-          <EmptyStates type="groups" onAction={() => setShowCreate(true)} />
+          <EmptyState type="groups" onAction={() => setShowCreate(true)} />
           ) : (
             <div className="grid grid-cols-2 gap-4">
               {groups.map(g => (
