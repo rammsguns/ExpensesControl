@@ -6,7 +6,11 @@ import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
+import PageTransition from '../components/PageTransition';
+import { SkeletonCard } from '../components/SkeletonLoaders';
+import { EmptyState } from '../components/EmptyStates';
 import { Search, PlusCircle, Users, Handshake, Home, Plus, Plane, Heart, MoreHorizontal } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 const GROUP_TYPES = [
   { id: 'home', icon: Home, labelEn: 'Home', labelEs: 'Hogar' },
@@ -76,6 +80,7 @@ export default function Dashboard() {
       for (const member of memberList) {
         try { await api.post(`/groups/${groupId}/members`, { email: member.email }); } catch {}
       }
+      toast.success(t('group_created'));
       setShowCreate(false);
       setGroupName(''); setGroupDesc(''); setGroupType('home');
       setMemberList([]); setMemberEmail('');
@@ -93,6 +98,7 @@ export default function Dashboard() {
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
+      <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-5">
         {/* Total Balance */}
         <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-5 text-white mb-4">
@@ -345,6 +351,7 @@ export default function Dashboard() {
         </div>
       )}
 
+      </PageTransition>
       <BottomNav />
     </div>
   );
