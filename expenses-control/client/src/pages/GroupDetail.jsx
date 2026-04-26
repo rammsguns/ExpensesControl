@@ -116,90 +116,112 @@ export default function GroupDetail() {
       <Navbar />
       <PageTransition>
         <div className="max-w-lg mx-auto">
-          {/* Group Header */}
-          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-5 pt-6 pb-8">
-            <div className="flex items-center gap-3 mb-3">
+          {/* Group Header - Compact */}
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-4 pt-4 pb-5">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0 flex-1">
+                <h1 className="text-xl md:text-2xl font-bold leading-tight truncate">{group.name}</h1>
+                <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                  <span className="bg-white/20 text-white text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
+                    <Users size={12} aria-hidden="true" />
+                    {members.length}
+                  </span>
+                  {iOwe.length === 0 && owedMe.length === 0 ? (
+                    <span className="bg-emerald-500/30 text-emerald-100 text-xs px-2.5 py-1 rounded-full flex items-center gap-1">
+                      <CheckCircle size={12} aria-hidden="true" />
+                      {language === 'es' ? 'Saldado' : 'Settled'}
+                    </span>
+                  ) : (
+                    <>
+                      {iOwe.map(b => (
+                        <span key={b.userId} className="bg-rose-500/30 text-rose-100 text-xs px-2.5 py-1 rounded-full">
+                          {language === 'es' ? 'Debes' : 'Owe'} MX$ {Math.abs(b.balance).toFixed(0)}
+                        </span>
+                      ))}
+                      {owedMe.map(b => (
+                        <span key={b.userId} className="bg-emerald-500/30 text-emerald-100 text-xs px-2.5 py-1 rounded-full">
+                          +MX$ {b.balance.toFixed(0)}
+                        </span>
+                      ))}
+                    </>
+                  )}
+                </div>
+              </div>
               <button 
                 onClick={() => navigate('/')} 
-                className="min-h-[44px] min-w-[44px] flex items-center gap-1 text-white/80 hover:text-white transition-colors duration-150 rounded-lg focus-ring"
+                className="min-h-[40px] min-w-[40px] flex items-center justify-center text-white/80 hover:text-white hover:bg-white/10 transition-colors duration-150 rounded-lg focus-ring shrink-0 mt-0.5"
                 aria-label={language === 'es' ? 'Volver a grupos' : 'Back to groups'}
               >
-                <ArrowLeft size={24} aria-hidden="true" />
-              </button>
-              <span className="text-sm font-medium text-white/80">
-                {language === 'es' ? 'Grupos' : 'Groups'}
-              </span>
-            </div>
-            <h1 className="text-2xl md:text-3xl font-bold leading-tight">{group.name}</h1>
-            <div className="flex items-center gap-3 mt-3 flex-wrap">
-              <span className="bg-white/20 text-white text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                <Users size={14} aria-hidden="true" />
-                {members.length} {language === 'es' ? 'personas' : 'people'}
-              </span>
-              <button
-                onClick={() => setShowAddMember(true)}
-                className="min-h-[44px] bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-full transition-colors duration-150 flex items-center gap-1.5 focus-ring"
-              >
-                <Plus size={14} aria-hidden="true" />
-                {language === 'es' ? 'Agregar' : 'Add'}
+                <ArrowLeft size={22} aria-hidden="true" />
               </button>
             </div>
           </div>
 
-          {/* Balance Statement */}
-          <div className="bg-white border-b px-5 py-5">
-            {iOwe.length === 0 && owedMe.length === 0 ? (
-              <p className="text-lg font-semibold text-slate-600 flex items-center gap-2">
-                <CheckCircle size={20} className="text-emerald-500" aria-hidden="true" />
-                {language === 'es' ? 'Todo saldado' : 'All settled up'}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {iOwe.map(b => (
-                  <p key={b.userId} className="text-base font-semibold text-rose-600 leading-relaxed">
-                    {language === 'es' ? 'Debes a' : 'You owe'} {b.name}{' '}
-                    <span className="font-bold text-orange-500">MX$ {Math.abs(b.balance).toFixed(2)}</span>
-                  </p>
-                ))}
-                {owedMe.map(b => (
-                  <p key={b.userId} className="text-base font-semibold text-slate-900 leading-relaxed">
-                    {b.name} {language === 'es' ? 'te debe' : 'owes you'}{' '}
-                    <span className="font-bold text-emerald-600">MX$ {b.balance.toFixed(2)}</span>
-                  </p>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-2 px-5 py-4 bg-white border-b overflow-x-auto scrollbar-hide">
-            <Link
-              to={`/settle/${id}`}
-              className="min-h-[48px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring"
-            >
-              <Handshake size={18} aria-hidden="true" />
-              {language === 'es' ? 'Saldar' : 'Settle up'}
-            </Link>
-            <button
-              onClick={() => setShowBalances(!showBalances)}
-              aria-expanded={showBalances}
-              aria-controls="balances-panel"
-              className={`min-h-[48px] rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring ${
-                showBalances 
-                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' 
-                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
-              }`}
-            >
-              <Scale size={18} aria-hidden="true" />
-              {language === 'es' ? 'Saldos' : 'Balances'}
-            </button>
-            <Link
-              to={`/add-expense/${id}`}
-              className="min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600 rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring shadow-sm"
-            >
-              <Receipt size={18} aria-hidden="true" />
-              {language === 'es' ? 'Agregar Gasto' : 'Add Expense'}
-            </Link>
+          {/* Action Buttons - Compact 2x2 Grid */}
+          <div className="grid grid-cols-2 gap-2 px-5 py-4 bg-white border-b">
+            {[
+              {
+                to: `/settle/${id}`,
+                icon: Handshake,
+                bg: 'bg-indigo-50',
+                text: 'text-indigo-600',
+                label: language === 'es' ? 'Saldar' : 'Settle',
+              },
+              {
+                action: () => setShowBalances(!showBalances),
+                icon: Scale,
+                bg: 'bg-amber-50',
+                text: 'text-amber-600',
+                label: language === 'es' ? 'Saldos' : 'Balances',
+                isActive: showBalances,
+                ariaExpanded: showBalances,
+                ariaControls: 'balances-panel',
+              },
+              {
+                to: `/add-expense/${id}`,
+                icon: Receipt,
+                bg: 'bg-emerald-50',
+                text: 'text-emerald-600',
+                label: language === 'es' ? 'Gasto' : 'Expense',
+              },
+              {
+                action: () => setShowAddMember(true),
+                icon: Plus,
+                bg: 'bg-violet-50',
+                text: 'text-violet-600',
+                label: language === 'es' ? 'Miembro' : 'Member',
+              },
+            ].map((item, i) => (
+              item.to ? (
+                <Link
+                  key={i}
+                  to={item.to}
+                  className="flex flex-col items-center justify-center gap-1.5 bg-white rounded-2xl shadow-sm border border-slate-200 p-3 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out h-[88px]"
+                >
+                  <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
+                    <item.icon size={20} className={item.text} aria-hidden="true" />
+                  </div>
+                  <span className="text-slate-700 font-medium text-xs leading-tight text-center">{item.label}</span>
+                </Link>
+              ) : (
+                <button
+                  key={i}
+                  onClick={item.action}
+                  aria-expanded={item.ariaExpanded}
+                  aria-controls={item.ariaControls}
+                  className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl shadow-sm border p-3 hover:shadow-md active:scale-[0.97] transition-all duration-200 ease-in-out h-[88px] ${
+                    item.isActive
+                      ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
+                      : 'bg-white border-slate-200 hover:border-indigo-200'
+                  }`}
+                >
+                  <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
+                    <item.icon size={20} className={item.text} aria-hidden="true" />
+                  </div>
+                  <span className="text-slate-700 font-medium text-xs leading-tight text-center">{item.label}</span>
+                </button>
+              )
+            ))}
           </div>
 
           {/* Balances Panel */}
