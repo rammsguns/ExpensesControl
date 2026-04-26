@@ -13,11 +13,11 @@ const queryClient = new QueryClient()
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props)
-    this.state = { hasError: false, error: null }
+    this.state = { hasError: false }
   }
 
-  static getDerivedStateFromError(error) {
-    return { hasError: true, error }
+  static getDerivedStateFromError() {
+    return { hasError: true }
   }
 
   componentDidCatch(error, errorInfo) {
@@ -45,9 +45,6 @@ class ErrorBoundary extends React.Component {
           <p style={{ color: '#6b7280', marginBottom: '1.5rem' }}>
             We encountered an unexpected error. Please try refreshing the page.
           </p>
-          <pre style={{ background: '#fee2e2', color: '#991b1b', padding: '1rem', borderRadius: '0.5rem', fontSize: '0.75rem', maxWidth: '100%', overflow: 'auto', marginBottom: '1rem' }}>
-            {this.state.error?.toString() || 'Unknown error'}
-          </pre>
           <button
             onClick={() => { this.setState({ hasError: false }); window.location.href = '/' }}
             style={{
