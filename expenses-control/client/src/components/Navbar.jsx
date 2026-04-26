@@ -20,10 +20,12 @@ export default function Navbar() {
           <AccessibilityToggle />
           <button
             onClick={() => changeLanguage(language === 'en' ? 'es' : 'en')}
-            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 rounded-lg font-medium transition-colors duration-150 focus-ring"
-            aria-label={language === 'en' ? 'Switch to Spanish' : 'Switch to English'}
+            className="min-h-[44px] flex items-center gap-1 text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-2 rounded-lg font-medium transition-colors duration-150 focus-ring"
+            aria-label={language === 'en' ? 'Cambiar a español' : 'Switch to English'}
           >
-            {language === 'en' ? '🇲🇽 ES' : '🇺🇸 EN'}
+            <span className={`px-1.5 py-0.5 rounded ${language === 'en' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-slate-400'}`}>EN</span>
+            <span className="text-slate-300">/</span>
+            <span className={`px-1.5 py-0.5 rounded ${language === 'es' ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-slate-400'}`}>ES</span>
           </button>
           <button
             onClick={logout}
