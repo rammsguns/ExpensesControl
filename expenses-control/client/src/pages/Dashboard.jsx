@@ -110,19 +110,18 @@ export default function Dashboard() {
         <div id="main-content" tabIndex="-1" className="max-w-lg mx-auto px-4 py-6">
 
 
-          {/* Quick Actions - Redesigned as clear buttons */}
-          <div className="mb-8">
-            <h3 className="font-semibold text-slate-900 text-lg mb-4 leading-snug">
+          {/* Quick Actions - Compact 2x2 grid */}
+          <div className="mb-6">
+            <h3 className="font-semibold text-slate-900 text-base mb-3 leading-snug">
               {typeof t === 'function' ? t('quick_actions') : 'Quick Actions'}
             </h3>
-            <div className="grid grid-cols-1 gap-3">
+            <div className="grid grid-cols-2 gap-2 md:gap-3">
               {[
                 {
                   icon: PlusCircle,
                   bg: 'bg-emerald-50',
                   text: 'text-emerald-600',
-                  title: language === 'es' ? 'Agregar Gasto' : 'Add Expense',
-                  desc: language === 'es' ? 'Registra un nuevo gasto' : 'Record a new expense',
+                  label: language === 'es' ? 'Gasto' : 'Expense',
                   isButton: true,
                   onClick: () => {
                     if (groups && groups.length > 0 && groups[0]?.id) {
@@ -132,36 +131,14 @@ export default function Dashboard() {
                     }
                   }
                 },
-                {
-                  to: '/search',
-                  icon: Search,
-                  bg: 'bg-indigo-50',
-                  text: 'text-indigo-600',
-                  title: language === 'es' ? 'Buscar' : 'Search',
-                  desc: language === 'es' ? 'Encuentra gastos pasados' : 'Find past expenses',
-                },
-                {
-                  icon: Plus,
-                  bg: 'bg-violet-50',
-                  text: 'text-violet-600',
-                  title: language === 'es' ? 'Crear Grupo' : 'Create Group',
-                  desc: language === 'es' ? 'Nuevo grupo de gastos' : 'New expense group',
-                  isButton: true,
-                  onClick: () => setShowCreate(true)
-                },
-                {
-                  to: `/settle/${userBalance?.groupId || 'groups'}`,
-                  icon: Handshake,
-                  bg: 'bg-amber-50',
-                  text: 'text-amber-600',
-                  title: language === 'es' ? 'Saldar Deuda' : 'Settle Up',
-                  desc: language === 'es' ? 'Paga lo que debes' : 'Pay what you owe',
-                },
+                { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
+                { icon: Plus, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Grupo' : 'Group', isButton: true, onClick: () => setShowCreate(true) },
+                { to: `/settle/${userBalance?.groupId || 'groups'}`, icon: Handshake, bg: 'bg-amber-50', text: 'text-amber-600', label: language === 'es' ? 'Saldar' : 'Settle' },
               ].map((item, i) => (
                 <Link
                   key={i}
                   to={item.to || '#'}
-                  className="flex items-center gap-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out min-h-[72px]"
+                  className="flex flex-col items-center justify-center gap-1.5 bg-white rounded-2xl shadow-sm border border-slate-200 p-3 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out h-[88px]"
                   onClick={(e) => {
                     if (item.onClick) {
                       e.preventDefault();
@@ -169,36 +146,16 @@ export default function Dashboard() {
                     }
                   }}
                 >
-                  <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
-                    <item.icon size={24} className={item.text} aria-hidden="true" />
+                  <div className={`w-10 h-10 rounded-xl ${item.bg} flex items-center justify-center`}>
+                    <item.icon size={20} className={item.text} aria-hidden="true" />
                   </div>
-                  <div className="flex flex-col min-w-0">
-                    <span className="text-slate-900 font-semibold text-base leading-snug">{item.title}</span>
-                    <span className="text-slate-500 text-sm leading-snug">{item.desc}</span>
-                  </div>
+                  <span className="text-slate-700 font-medium text-xs leading-tight text-center">{item.label}</span>
                 </Link>
               ))}
             </div>
           </div>
 
-          {/* Total Balance */}
-          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-4 md:p-5 text-white mb-4">
-            <h3 className="font-semibold text-indigo-100 mb-1.5 text-sm leading-relaxed">
-              {typeof t === 'function' ? t('total_balance') : 'Total Balance'}
-            </h3>
-            {userBalance && (
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-2xl md:text-3xl font-bold leading-tight">
-                  MX$ {Math.abs(userBalance.balance).toFixed(2)}
-                </span>
-                <span className="text-sm font-normal text-indigo-200 leading-relaxed">
-                  {userBalance.balance >= 0 ? (typeof t === 'function' ? t('owes_you') : 'owes you') : (typeof t === 'function' ? t('you_owe') : 'you owe')}
-                </span>
-              </div>
-            )}
-          </div>
-
-                    {/* Your Groups */}
+          {/* Your Groups */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-900 text-lg leading-snug">
@@ -215,6 +172,23 @@ export default function Dashboard() {
                 {groups.map(g => (
                   <GroupCard key={g.id} group={g} icon={getGroupIcon(g.type)} userId={user?.id} />
                 ))}
+              </div>
+            )}
+          </div>
+
+          {/* Total Balance - Moved to bottom */}
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-4 md:p-5 text-white mb-4 mt-6">
+            <h3 className="font-semibold text-indigo-100 mb-1.5 text-sm leading-relaxed">
+              {typeof t === 'function' ? t('total_balance') : 'Total Balance'}
+            </h3>
+            {userBalance && (
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-2xl md:text-3xl font-bold leading-tight">
+                  MX$ {Math.abs(userBalance.balance).toFixed(2)}
+                </span>
+                <span className="text-sm font-normal text-indigo-200 leading-relaxed">
+                  {userBalance.balance >= 0 ? (typeof t === 'function' ? t('owes_you') : 'owes you') : (typeof t === 'function' ? t('you_owe') : 'you owe')}
+                </span>
               </div>
             )}
           </div>
