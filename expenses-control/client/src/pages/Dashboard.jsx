@@ -108,22 +108,7 @@ export default function Dashboard() {
       <Navbar />
       <PageTransition>
         <div className="max-w-lg mx-auto px-4 py-6">
-          {/* Total Balance */}
-          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-5 md:p-6 text-white mb-6">
-            <h3 className="font-semibold text-indigo-100 mb-2 text-sm leading-relaxed">
-              {typeof t === 'function' ? t('total_balance') : 'Total Balance'}
-            </h3>
-            {userBalance && (
-              <div className="flex items-baseline gap-2 flex-wrap">
-                <span className="text-3xl md:text-4xl font-bold leading-tight">
-                  MX$ {Math.abs(userBalance.balance).toFixed(2)}
-                </span>
-                <span className="text-base font-normal text-indigo-200 leading-relaxed">
-                  {userBalance.balance >= 0 ? (typeof t === 'function' ? t('owes_you') : 'owes you') : (typeof t === 'function' ? t('you_owe') : 'you owe')}
-                </span>
-              </div>
-            )}
-          </div>
+
 
           {/* Quick Actions - Redesigned as clear buttons */}
           <div className="mb-8">
@@ -196,7 +181,24 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Your Groups */}
+          {/* Total Balance */}
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-4 md:p-5 text-white mb-4">
+            <h3 className="font-semibold text-indigo-100 mb-1.5 text-sm leading-relaxed">
+              {typeof t === 'function' ? t('total_balance') : 'Total Balance'}
+            </h3>
+            {userBalance && (
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-2xl md:text-3xl font-bold leading-tight">
+                  MX$ {Math.abs(userBalance.balance).toFixed(2)}
+                </span>
+                <span className="text-sm font-normal text-indigo-200 leading-relaxed">
+                  {userBalance.balance >= 0 ? (typeof t === 'function' ? t('owes_you') : 'owes you') : (typeof t === 'function' ? t('you_owe') : 'you owe')}
+                </span>
+              </div>
+            )}
+          </div>
+
+                    {/* Your Groups */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-semibold text-slate-900 text-lg leading-snug">
