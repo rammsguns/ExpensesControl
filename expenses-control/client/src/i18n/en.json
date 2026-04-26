@@ -76,6 +76,10 @@
   "no_search_results": "Try different search terms",
   "add_first_expense": "Add your first expense",
   "error_heading": "Error",
+  "field_required": "This field is required",
+  "error_invalid_amount": "Please enter a valid amount",
+  "error_select_split_type": "Please select a split type",
+  "error_description_required": "Please enter a description",
   "quick_actions": "Quick Actions",
   "recent_activity": "Recent Activity"
 }

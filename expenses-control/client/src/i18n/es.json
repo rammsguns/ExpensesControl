@@ -76,6 +76,10 @@
   "no_search_results": "Intenta con otros términos de búsqueda",
   "add_first_expense": "Agrega tu primer gasto",
   "error_heading": "Error",
+  "field_required": "Este campo es obligatorio",
+  "error_invalid_amount": "Ingresa un monto válido",
+  "error_select_split_type": "Selecciona un tipo de división",
+  "error_description_required": "Ingresa una descripción",
   "quick_actions": "Acciones rápidas",
   "recent_activity": "Actividad reciente"
 }

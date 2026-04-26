@@ -166,7 +166,7 @@ export default function EditExpense() {
         </div>
         <h2 className="text-xl font-bold text-slate-900 mb-4"> <Pencil size={24} className="inline mr-2" /> {t('edit_expense')}</h2>
 
-        {error && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
+        {error && <div role="alert" className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm mb-4">{error}</div>}
 
         <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 space-y-4">
           <div>

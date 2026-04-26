@@ -31,6 +31,9 @@ export default function AddExpense() {
   // Track if amount was manually set (for exact mode auto-calculation)
   const [manualAmount, setManualAmount] = React.useState(false);
 
+  // Inline validation states
+  const [touched, setTouched] = React.useState({});
+
   React.useEffect(() => {
     if (members.length > 0 && !paidBy) {
       setPaidBy(members[0]?.id?.toString() || '');
@@ -67,9 +70,37 @@ export default function AddExpense() {
     return sum + (isNaN(val) ? 0 : val);
   }, 0);
 
+  const getFieldError = (field) => {
+    if (!touched[field]) return '';
+    if (field === 'description' && !description.trim()) return t('error_description_required');
+    if (field === 'amount' && (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0)) return t('error_invalid_amount');
+    if (field === 'splitType' && !splitType) return t('error_select_split_type');
+    return '';
+  };
+
+  const markTouched = (field) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+
+    // Inline validation before submit
+    setTouched({ description: true, amount: true, splitType: true });
+
+    if (!description.trim()) {
+      setError(t('error_description_required'));
+      return;
+    }
+    if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      setError(t('error_invalid_amount'));
+      return;
+    }
+    if (!splitType) {
+      setError(t('error_select_split_type'));
+      return;
+    }
 
     // Validate exact splits match total
     if (splitType === 'exact') {
@@ -125,38 +156,66 @@ export default function AddExpense() {
     setSplits(newSplits);
   };
 
+  const descriptionError = getFieldError('description');
+  const amountError = getFieldError('amount');
+
   return (
     <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
       <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-2">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold" title={t('cancel')}>
+          <button
+            onClick={() => navigate(`/group/${groupId}`)}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-slate-700 text-2xl font-semibold focus-ring rounded-lg"
+            aria-label={t('cancel')}
+            title={t('cancel')}
+          >
             <ArrowLeft size={24} />
           </button>
-          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+          <button
+            onClick={() => navigate('/')}
+            className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 text-2xl focus-ring rounded-lg"
+            aria-label="Home"
+            title="Home"
+          >
             <Home size={24} />
           </button>
         </div>
-        <h2 className="text-2xl font-bold text-slate-900"> <Receipt size={28} className="inline mr-2" /> {t('add_expense')}</h2>
+        <h2 className="text-2xl font-bold text-slate-900">
+          <Receipt size={28} className="inline mr-2" aria-hidden="true" /> {t('add_expense')}
+        </h2>
 
-        <form onSubmit={handleSubmit} className="mt-6 space-y-4">
-          {error && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{error}</div>}
+        <form onSubmit={handleSubmit} autoComplete="off" className="mt-6 space-y-4">
+          {error && (
+            <div role="alert" className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{t('description')}</label>
+            <label htmlFor="expense-description" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('description')}
+            </label>
             <input
+              id="expense-description"
               type="text"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              onBlur={() => markTouched('description')}
               placeholder="Dinner, Groceries, etc."
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring ${
+                descriptionError ? 'border-rose-300 focus:border-rose-500' : 'border-slate-200'
+              }`}
               required
             />
+            {descriptionError && (
+              <p className="text-xs text-rose-500 mt-1" role="alert">{descriptionError}</p>
+            )}
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">
+            <label htmlFor="expense-amount" className="block text-sm font-medium text-slate-700 mb-1">
               {t('amount')} (MXN)
               {splitType === 'exact' && (
                 <span className="text-xs text-slate-400 ml-1 font-normal">
@@ -165,6 +224,7 @@ export default function AddExpense() {
               )}
             </label>
             <input
+              id="expense-amount"
               type="number"
               step="0.01"
               value={amount}
@@ -175,17 +235,20 @@ export default function AddExpense() {
                 }
               }}
               onBlur={() => {
-                // If amount is cleared, allow auto-calculation again
+                markTouched('amount');
                 if (!amount && splitType === 'exact') {
                   setManualAmount(false);
                 }
               }}
               placeholder="0.00"
-              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none ${
-                splitType === 'exact' && !manualAmount ? 'bg-slate-50' : ''
-              }`}
+              className={`w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring ${
+                amountError ? 'border-rose-300 focus:border-rose-500' : 'border-slate-200'
+              } ${splitType === 'exact' && !manualAmount ? 'bg-slate-50' : ''}`}
               required
             />
+            {amountError && (
+              <p className="text-xs text-rose-500 mt-1" role="alert">{amountError}</p>
+            )}
             {splitType === 'exact' && (
               <p className="text-xs text-slate-500 mt-1">
                 Sum of splits: <span className={Math.abs(splitTotal - parseFloat(amount || 0)) > 0.01 ? 'text-rose-600 font-bold' : 'text-emerald-600 font-bold'}>
@@ -199,11 +262,14 @@ export default function AddExpense() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{t('paid_by')}</label>
+            <label htmlFor="expense-paid-by" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('paid_by')}
+            </label>
             <select
+              id="expense-paid-by"
               value={paidBy}
               onChange={(e) => setPaidBy(e.target.value)}
-              className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring"
               required
             >
               {members.map(m => (
@@ -213,14 +279,18 @@ export default function AddExpense() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1">{t('split_type')}</label>
-            <div className="flex gap-2">
+            <span id="split-type-label" className="block text-sm font-medium text-slate-700 mb-1">
+              {t('split_type')}
+            </span>
+            <div className="flex gap-2" role="radiogroup" aria-labelledby="split-type-label">
               {['equal', 'percentage', 'exact'].map(type => (
                 <button
                   key={type}
                   type="button"
+                  role="radio"
+                  aria-checked={splitType === type}
                   onClick={() => setSplitType(type)}
-                  className={`flex-1 py-2 px-3 rounded-lg text-sm font-medium border transition ${
+                  className={`flex-1 min-h-[44px] py-2 px-3 rounded-lg text-sm font-medium border transition focus-ring ${
                     splitType === type
                       ? 'bg-indigo-600 text-white border-indigo-600'
                       : 'bg-white text-slate-600 border-slate-200 hover:border-indigo-300'
@@ -243,7 +313,7 @@ export default function AddExpense() {
           {splitType !== 'equal' && (
             <div className="space-y-2">
               <p className="text-sm font-medium text-slate-700">
-                {splitType === 'exact' ? 'Enter each person\'s share:' : t('splits')}
+                {splitType === 'exact' ? "Enter each person's share:" : t('splits')}
               </p>
               {splits.map((s, i) => (
                 <div key={s.userId} className="flex items-center gap-3">
@@ -254,7 +324,7 @@ export default function AddExpense() {
                     value={s.value}
                     onChange={(e) => updateSplit(i, e.target.value)}
                     placeholder={splitType === 'percentage' ? '%' : 'MX$'}
-                    className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm"
+                    className="flex-1 border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm focus-ring"
                   />
                 </div>
               ))}
@@ -274,7 +344,7 @@ export default function AddExpense() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
+            className="w-full min-h-[44px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50 focus-ring"
           >
             {loading ? 'Saving...' : t('save')}
           </button>
@@ -282,7 +352,7 @@ export default function AddExpense() {
           <button
             type="button"
             onClick={() => navigate(`/group/${groupId}`)}
-            className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2.5 font-medium"
+            className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2.5 font-medium focus-ring"
           >
             {t('cancel')}
           </button>
