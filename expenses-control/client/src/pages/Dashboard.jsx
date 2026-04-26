@@ -151,9 +151,9 @@ export default function Dashboard() {
                     <span className="text-slate-700 font-medium text-sm leading-snug text-center w-full">{item.label}</span>
                   </>
                 );
-                const classes = "bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out min-h-[100px]";
+                const classes = "bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out h-[120px] w-full";
                 return item.isButton ? (
-                  <button key={i} onClick={item.onClick} className={classes}>{content}</button>
+                  <div key={i} className={classes} onClick={item.onClick} role="button" tabIndex={0}>{content}</div>
                 ) : (
                   <Link key={i} to={item.to} className={classes}>{content}</Link>
                 );

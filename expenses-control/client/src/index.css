@@ -15,6 +15,16 @@ input, select, textarea, button {
   font-family: inherit;
 }
 
+/* Reset default button styles */
+button {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+}
+
 /* Smooth scroll */
 html {
   scroll-behavior: smooth;
