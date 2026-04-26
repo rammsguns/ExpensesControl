@@ -11,7 +11,7 @@ import { SkeletonExpenseList } from '../components/SkeletonLoaders';
 import { EmptyState } from '../components/EmptyStates';
 import ExpenseCard from '../components/ExpenseCard';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Plus, Handshake, Receipt, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Plus, Handshake, Receipt, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal, X } from 'lucide-react';
 
 const CATEGORY_ICONS = {
   food: { icon: Receipt, bg: 'bg-pink-100 text-pink-600' },
@@ -94,7 +94,7 @@ export default function GroupDetail() {
         <Navbar />
         <div className="text-center">
           <p className="text-slate-500 text-lg">{language === 'es' ? 'Grupo no encontrado' : 'Group not found'}</p>
-          <button onClick={() => navigate('/')} className="mt-4 text-indigo-600 font-medium focus-ring rounded-lg px-3 py-2">
+          <button onClick={() => navigate('/')} className="mt-4 min-h-[44px] text-indigo-600 font-medium focus-ring rounded-lg px-4 py-3">
             {language === 'es' ? 'Volver al inicio' : 'Go home'}
           </button>
         </div>
@@ -138,7 +138,7 @@ export default function GroupDetail() {
               </span>
               <button
                 onClick={() => setShowAddMember(true)}
-                className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-full transition-colors duration-150 flex items-center gap-1.5 focus-ring"
+                className="min-h-[44px] bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-full transition-colors duration-150 flex items-center gap-1.5 focus-ring"
               >
                 <Plus size={14} aria-hidden="true" />
                 {language === 'es' ? 'Agregar' : 'Add'}
@@ -182,6 +182,8 @@ export default function GroupDetail() {
             </Link>
             <button
               onClick={() => setShowBalances(!showBalances)}
+              aria-expanded={showBalances}
+              aria-controls="balances-panel"
               className={`min-h-[48px] rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring ${
                 showBalances 
                   ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' 
@@ -202,7 +204,7 @@ export default function GroupDetail() {
 
           {/* Balances Panel */}
           {showBalances && (
-            <div className="bg-white border-b px-5 py-5 space-y-3">
+            <div id="balances-panel" className="bg-white border-b px-5 py-5 space-y-3">
               {balances.map(b => (
                 <div key={b.userId} className="flex justify-between items-center py-2">
                   <span className="font-medium text-slate-900 text-sm">
