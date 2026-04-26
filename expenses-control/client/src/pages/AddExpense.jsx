@@ -6,12 +6,12 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Home, Receipt, DollarSign } from 'lucide-react';
+import { ArrowLeft, Home, Receipt, DollarSign, ChevronDown, Users } from 'lucide-react';
 
 export default function AddExpense() {
   const { groupId } = useParams();
   const navigate = useNavigate();
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const qc = useQueryClient();
 
   const { data: group } = useQuery({
@@ -19,7 +19,17 @@ export default function AddExpense() {
     queryFn: () => api.get(`/groups/${groupId}`).then(r => r.data),
   });
 
-  const members = group?.members || [];
+  // Fetch all groups for selector
+  const { data: groups = [] } = useQuery({
+    queryKey: ['groups'],
+    queryFn: () => api.get('/groups').then(r => r.data),
+  });
+
+  const [selectedGroupId, setSelectedGroupId] = React.useState(groupId || '');
+
+  // Get current group (from URL or selector)
+  const currentGroup = groupId ? group : groups.find(g => g.id.toString() === selectedGroupId.toString());
+  const members = currentGroup?.members || [];
 
   const [description, setDescription] = React.useState('');
   const [amount, setAmount] = React.useState('');
@@ -45,7 +55,7 @@ export default function AddExpense() {
     }
     // Reset manual flag when split type changes
     setManualAmount(false);
-  }, [members, splitType]);
+  }, [members, splitType, selectedGroupId]);
 
   // Auto-calculate total amount for exact splits
   React.useEffect(() => {
@@ -127,7 +137,7 @@ export default function AddExpense() {
 
     try {
       const payload = {
-        groupId: parseInt(groupId),
+        groupId: parseInt(groupId || selectedGroupId),
         description,
         amount: parseFloat(amount),
         paidBy: parseInt(paidBy),
@@ -141,8 +151,9 @@ export default function AddExpense() {
       };
       await api.post('/expenses', payload);
       toast.success(t('toast_expense_added'));
-      qc.invalidateQueries({ queryKey: ['expenses', groupId] });
-      navigate(`/group/${groupId}`);
+      const targetGroupId = groupId || selectedGroupId;
+      qc.invalidateQueries({ queryKey: ['expenses', targetGroupId] });
+      navigate(`/group/${targetGroupId}`);
     } catch (err) {
       setError(err.response?.data?.error || 'Failed to create expense');
       toast.error(t('toast_error_generic'));
@@ -166,7 +177,7 @@ export default function AddExpense() {
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-2">
           <button
-            onClick={() => navigate(`/group/${groupId}`)}
+            onClick={() => groupId ? navigate(`/group/${groupId}`) : navigate('/')}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-slate-700 text-2xl font-semibold focus-ring rounded-lg"
             aria-label={t('cancel')}
             title={t('cancel')}
@@ -193,6 +204,38 @@ export default function AddExpense() {
             </div>
           )}
 
+          {/* Group Selector */}
+          <div>
+            <label htmlFor="expense-group" className="block text-sm font-medium text-slate-700 mb-1">
+              {language === 'es' ? 'Grupo' : 'Group'}
+            </label>
+            {groupId ? (
+              <div className="w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-50 text-slate-700 flex items-center gap-2 min-h-[44px]">
+                <Users size={16} className="text-indigo-500" aria-hidden="true" />
+                <span className="font-medium">{currentGroup?.name || 'Loading...'}</span>
+              </div>
+            ) : (
+              <div className="relative">
+                <select
+                  id="expense-group"
+                  value={selectedGroupId}
+                  onChange={(e) => setSelectedGroupId(e.target.value)}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
+                  required
+                >
+                  <option value="">{language === 'es' ? 'Selecciona un grupo...' : 'Select a group...'}</option>
+                  {groups.map(g => (
+                    <option key={g.id} value={g.id}>{g.name}</option>
+                  ))}
+                </select>
+                <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
+              </div>
+            )}
+          </div>
+
+          {/* Show form fields only when group is selected */}
+          {selectedGroupId ? (
+            <>
           <div>
             <label htmlFor="expense-description" className="block text-sm font-medium text-slate-700 mb-1">
               {t('description')}
@@ -341,9 +384,18 @@ export default function AddExpense() {
             </div>
           )}
 
+            </>
+          ) : (
+            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+              <p className="text-amber-700 text-sm font-medium">
+                {language === 'es' ? 'Selecciona un grupo para agregar el gasto' : 'Select a group to add an expense'}
+              </p>
+            </div>
+          )}
+
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || !selectedGroupId}
             className="w-full min-h-[44px] bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50 focus-ring"
           >
             {loading ? 'Saving...' : t('save')}
@@ -351,7 +403,7 @@ export default function AddExpense() {
 
           <button
             type="button"
-            onClick={() => navigate(`/group/${groupId}`)}
+            onClick={() => groupId ? navigate(`/group/${groupId}`) : navigate('/')}
             className="w-full min-h-[44px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2.5 font-medium focus-ring"
           >
             {t('cancel')}
