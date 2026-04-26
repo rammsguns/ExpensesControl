@@ -125,44 +125,74 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Quick Actions */}
+          {/* Quick Actions - Redesigned as clear buttons */}
           <div className="mb-8">
             <h3 className="font-semibold text-slate-900 text-lg mb-4 leading-snug">
               {typeof t === 'function' ? t('quick_actions') : 'Quick Actions'}
             </h3>
-            <div className="grid grid-cols-2 gap-3 md:gap-4">
+            <div className="grid grid-cols-1 gap-3">
               {[
-                { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
-                { icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => {
-                  if (groups && groups.length > 0 && groups[0]?.id) {
-                    navigate(`/add-expense/${groups[0].id}`);
-                  } else {
-                    toast.error(language === 'es' ? 'Crea un grupo primero' : 'Create a group first');
+                {
+                  icon: PlusCircle,
+                  bg: 'bg-emerald-50',
+                  text: 'text-emerald-600',
+                  title: language === 'es' ? 'Agregar Gasto' : 'Add Expense',
+                  desc: language === 'es' ? 'Registra un nuevo gasto' : 'Record a new expense',
+                  isButton: true,
+                  onClick: () => {
+                    if (groups && groups.length > 0 && groups[0]?.id) {
+                      navigate(`/add-expense/${groups[0].id}`);
+                    } else {
+                      toast.error(language === 'es' ? 'Crea un grupo primero' : 'Create a group first');
+                    }
                   }
-                } },
-                { icon: Plus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: typeof t === 'function' ? t('create_group') : 'Create Group', isButton: true, onClick: () => setShowCreate(true) },
-                { to: `/settle/${userBalance?.groupId || 'groups'}`, icon: Handshake, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Saldar' : 'Settle' },
-              ].map((item, i) => {
-                const classes = "flex bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out h-[120px] w-full";
-                return (
-                  <Link
-                    key={i}
-                    to={item.to || '#'}
-                    className={classes}
-                    onClick={(e) => {
-                      if (item.onClick) {
-                        e.preventDefault();
-                        item.onClick();
-                      }
-                    }}
-                  >
-                    <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center`}>
-                      <item.icon size={24} className={item.text} aria-hidden="true" />
-                    </div>
-                    <span className="text-slate-700 font-medium text-sm leading-snug text-center w-full">{item.label}</span>
-                  </Link>
-                );
-              })}
+                },
+                {
+                  to: '/search',
+                  icon: Search,
+                  bg: 'bg-indigo-50',
+                  text: 'text-indigo-600',
+                  title: language === 'es' ? 'Buscar' : 'Search',
+                  desc: language === 'es' ? 'Encuentra gastos pasados' : 'Find past expenses',
+                },
+                {
+                  icon: Plus,
+                  bg: 'bg-violet-50',
+                  text: 'text-violet-600',
+                  title: language === 'es' ? 'Crear Grupo' : 'Create Group',
+                  desc: language === 'es' ? 'Nuevo grupo de gastos' : 'New expense group',
+                  isButton: true,
+                  onClick: () => setShowCreate(true)
+                },
+                {
+                  to: `/settle/${userBalance?.groupId || 'groups'}`,
+                  icon: Handshake,
+                  bg: 'bg-amber-50',
+                  text: 'text-amber-600',
+                  title: language === 'es' ? 'Saldar Deuda' : 'Settle Up',
+                  desc: language === 'es' ? 'Paga lo que debes' : 'Pay what you owe',
+                },
+              ].map((item, i) => (
+                <Link
+                  key={i}
+                  to={item.to || '#'}
+                  className="flex items-center gap-4 bg-white rounded-2xl shadow-sm border border-slate-200 p-4 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out min-h-[72px]"
+                  onClick={(e) => {
+                    if (item.onClick) {
+                      e.preventDefault();
+                      item.onClick();
+                    }
+                  }}
+                >
+                  <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center shrink-0`}>
+                    <item.icon size={24} className={item.text} aria-hidden="true" />
+                  </div>
+                  <div className="flex flex-col min-w-0">
+                    <span className="text-slate-900 font-semibold text-base leading-snug">{item.title}</span>
+                    <span className="text-slate-500 text-sm leading-snug">{item.desc}</span>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
 
