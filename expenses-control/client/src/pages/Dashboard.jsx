@@ -148,7 +148,7 @@ export default function Dashboard() {
                     <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center`}>
                       <item.icon size={24} className={item.text} aria-hidden="true" />
                     </div>
-                    <span className="text-slate-700 font-medium text-sm leading-snug">{item.label}</span>
+                    <span className="text-slate-700 font-medium text-sm leading-snug text-center w-full">{item.label}</span>
                   </>
                 );
                 const classes = "bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out min-h-[100px]";
