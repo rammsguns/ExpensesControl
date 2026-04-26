@@ -107,7 +107,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
       <PageTransition>
-        <div className="max-w-lg mx-auto px-4 py-6">
+        <div id="main-content" tabIndex="-1" className="max-w-lg mx-auto px-4 py-6">
 
 
           {/* Quick Actions - Redesigned as clear buttons */}

@@ -97,3 +97,133 @@ select {
   background-size: 1.5em 1.5em;
   padding-right: 2.5rem;
 }
+/* Accessibility Theme - High Contrast Mode */
+.high-contrast {
+  --color-bg: #000000 !important;
+  --color-text: #ffffff !important;
+  --color-primary: #ffff00 !important;
+  --color-secondary: #00ffff !important;
+  --color-accent: #ff00ff !important;
+  --color-border: #ffffff !important;
+  --color-error: #ff0000 !important;
+  --color-success: #00ff00 !important;
+}
+
+.high-contrast body {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+}
+
+.high-contrast .bg-slate-50,
+.high-contrast .bg-slate-100,
+.high-contrast .bg-gray-50,
+.high-contrast .bg-gray-100 {
+  background-color: #000000 !important;
+}
+
+.high-contrast .bg-white {
+  background-color: #000000 !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast .text-slate-900,
+.high-contrast .text-gray-900,
+.high-contrast .text-slate-800,
+.high-contrast .text-gray-800 {
+  color: #ffffff !important;
+}
+
+.high-contrast .text-slate-700,
+.high-contrast .text-gray-700,
+.high-contrast .text-slate-600,
+.high-contrast .text-gray-600 {
+  color: #ffffff !important;
+}
+
+.high-contrast .text-slate-500,
+.high-contrast .text-gray-500 {
+  color: #cccccc !important;
+}
+
+.high-contrast .border-slate-200,
+.high-contrast .border-gray-200,
+.high-contrast .border-slate-300 {
+  border-color: #ffffff !important;
+}
+
+.high-contrast .bg-indigo-600,
+.high-contrast .bg-violet-600,
+.high-contrast .bg-emerald-600,
+.high-contrast .bg-rose-600 {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border: 3px solid #ffff00 !important;
+}
+
+.high-contrast .hover\:bg-indigo-700:hover,
+.high-contrast .hover\:bg-violet-700:hover {
+  background-color: #ffff00 !important;
+  color: #000000 !important;
+}
+
+.high-contrast input,
+.high-contrast select,
+.high-contrast textarea {
+  background-color: #000000 !important;
+  color: #ffffff !important;
+  border: 2px solid #ffffff !important;
+}
+
+.high-contrast button {
+  background-color: #000000 !important;
+  color: #ffff00 !important;
+  border: 3px solid #ffff00 !important;
+}
+
+.high-contrast a {
+  color: #00ffff !important;
+  text-decoration: underline !important;
+}
+
+.high-contrast .focus-ring:focus {
+  outline: 4px solid #ff00ff !important;
+  outline-offset: 4px !important;
+}
+
+/* Large Text Mode */
+.large-text html {
+  font-size: 120% !important;
+}
+
+.large-text body {
+  font-size: 1.2rem !important;
+}
+
+.large-text h1 { font-size: 2.5rem !important; }
+.large-text h2 { font-size: 2rem !important; }
+.large-text h3 { font-size: 1.75rem !important; }
+.large-text p, .large-text span, .large-text div { font-size: 1.2rem !important; }
+.large-text button { font-size: 1.2rem !important; min-height: 56px !important; }
+.large-text input, .large-text select { font-size: 1.2rem !important; }
+
+/* Reduced Motion */
+.reduced-motion *,
+.reduced-motion *::before,
+.reduced-motion *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}

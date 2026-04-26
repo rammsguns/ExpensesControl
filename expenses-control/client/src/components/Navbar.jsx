@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import { DollarSign } from 'lucide-react';
+import AccessibilityToggle from './AccessibilityToggle';
 
 export default function Navbar() {
   const { t, language, changeLanguage } = useTranslation();
@@ -16,6 +17,7 @@ export default function Navbar() {
           <span className="leading-tight">ExpensesControl</span>
         </Link>
         <div className="flex items-center gap-2">
+          <AccessibilityToggle />
           <button
             onClick={() => changeLanguage(language === 'en' ? 'es' : 'en')}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 rounded-lg font-medium transition-colors duration-150 focus-ring"

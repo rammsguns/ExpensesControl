@@ -81,5 +81,17 @@
   "error_select_split_type": "Please select a split type",
   "error_description_required": "Please enter a description",
   "quick_actions": "Quick Actions",
-  "recent_activity": "Recent Activity"
+  "recent_activity": "Recent Activity",
+  "accessibility": "Accessibility",
+  "high_contrast": "High Contrast",
+  "high_contrast_desc": "Black/yellow theme",
+  "large_text": "Large Text",
+  "large_text_desc": "Increase font size",
+  "reduced_motion": "Reduced Motion",
+  "reduced_motion_desc": "Disable animations",
+  "close": "Close",
+  "accessibility_settings": "Accessibility settings",
+  "toggle_high_contrast": "Toggle high contrast mode",
+  "toggle_large_text": "Toggle large text mode",
+  "toggle_reduced_motion": "Toggle reduced motion mode"
 }

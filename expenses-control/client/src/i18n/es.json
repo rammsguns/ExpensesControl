@@ -81,5 +81,17 @@
   "error_select_split_type": "Selecciona un tipo de división",
   "error_description_required": "Ingresa una descripción",
   "quick_actions": "Acciones rápidas",
-  "recent_activity": "Actividad reciente"
+  "recent_activity": "Actividad reciente",
+  "accessibility": "Accesibilidad",
+  "high_contrast": "Alto Contraste",
+  "high_contrast_desc": "Tema negro/amarillo",
+  "large_text": "Texto Grande",
+  "large_text_desc": "Aumentar tamaño de fuente",
+  "reduced_motion": "Movimiento Reducido",
+  "reduced_motion_desc": "Desactivar animaciones",
+  "close": "Cerrar",
+  "accessibility_settings": "Configuración de accesibilidad",
+  "toggle_high_contrast": "Activar modo alto contraste",
+  "toggle_large_text": "Activar modo texto grande",
+  "toggle_reduced_motion": "Activar modo movimiento reducido"
 }
