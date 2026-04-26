@@ -218,7 +218,7 @@ export default function Dashboard() {
                 <button 
                   onClick={createGroup} 
                   disabled={creating || !groupName.trim()} 
-                  className="min-h-[44px] px-3 text-indigo-600 font-bold disabled:opacity-40 transition-opacity duration-150 rounded-lg focus-ring"
+                  className="min-h-[44px] px-5 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:bg-slate-300 text-white font-bold rounded-xl transition-all duration-150 active:scale-[0.97] focus-ring shadow-sm"
                 >
                   {creating ? (typeof t === 'function' ? t('creating') : 'Creating...') : (typeof t === 'function' ? t('create') : 'Create')}
                 </button>
@@ -382,6 +382,18 @@ export default function Dashboard() {
                     {language === 'es' ? '(tú — agregado automáticamente)' : '(you — added automatically)'}
                   </span>
                 </div>
+
+                {/* Bottom Save Button */}
+                <button 
+                  onClick={createGroup}
+                  disabled={creating || !groupName.trim()}
+                  className="w-full min-h-[56px] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 disabled:bg-slate-300 text-white font-bold rounded-xl transition-all duration-150 active:scale-[0.97] focus-ring shadow-sm text-lg flex items-center justify-center gap-2"
+                >
+                  <Plus size={22} />
+                  {creating 
+                    ? (typeof t === 'function' ? t('creating') : 'Creating...') 
+                    : (typeof t === 'function' ? t('create_group') : 'Create Group')}
+                </button>
               </div>
             </div>
           </div>
