@@ -8,7 +8,7 @@ import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Home, Handshake, Receipt } from 'lucide-react';
+import { ArrowLeft, Home, Handshake, Receipt, CheckCircle } from 'lucide-react';
 
 export default function SettleUp() {
   const { groupId } = useParams();
@@ -76,10 +76,10 @@ export default function SettleUp() {
       <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold touch-target min-h-[44px] min-w-[44px]" aria-label="Go back">
+          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold min-h-[44px] min-w-[44px] focus-ring" aria-label="Go back">
             <ArrowLeft size={24} /> {t('dashboard')}
           </button>
-          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl min-h-[44px] min-w-[44px] focus-ring" aria-label="Home">
             <Home size={24} />
           </button>
         </div>
@@ -111,13 +111,14 @@ export default function SettleUp() {
         <div className="mt-4 bg-white rounded-xl shadow-sm border border-slate-200 p-4">
           <h3 className="font-semibold text-slate-700 mb-3">{t('record_settlement')}</h3>
           <form onSubmit={handleSettle} className="space-y-3">
-            {error && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{error}</div>}
+            {error && <div role="alert" className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{error}</div>}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1">{t('from')}</label>
               <select
                 value={fromUserId}
                 onChange={(e) => setFromUserId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring"
+                aria-label={t('from')}
                 required
               >
                 <option value="">Select...</option>
@@ -129,7 +130,8 @@ export default function SettleUp() {
               <select
                 value={toUserId}
                 onChange={(e) => setToUserId(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring"
+                aria-label={t('to')}
                 required
               >
                 <option value="">Select...</option>
@@ -143,14 +145,15 @@ export default function SettleUp() {
                 step="0.01"
                 value={settleAmount}
                 onChange={(e) => setSettleAmount(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring"
+                aria-label={`${t('amount')} (MXN)`}
                 required
               />
             </div>
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium disabled:opacity-50 min-h-[44px] focus-ring"
             >
               {loading ? '...' : t('settle')}
             </button>
