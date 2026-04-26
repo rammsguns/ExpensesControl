@@ -105,10 +105,10 @@ export default function SearchExpenses() {
       <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-4">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate('/')} className="flex items-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold">
+          <button onClick={() => navigate('/')} className="flex items-center justify-center gap-1 text-slate-500 hover:text-slate-700 text-2xl font-semibold min-w-[44px] min-h-[44px] focus-ring" aria-label={language === 'es' ? 'Volver' : 'Go back'}>
             <ArrowLeft size={24} />
           </button>
-          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">
+          <button onClick={() => navigate('/')} className="flex items-center justify-center text-slate-400 hover:text-slate-600 text-2xl min-w-[44px] min-h-[44px] focus-ring" aria-label={language === 'es' ? 'Ir al inicio' : 'Go home'}>
             <Home size={24} />
           </button>
           <h2 className="text-xl font-bold text-slate-900"> <Search size={24} className="inline mr-2" /> {language === 'es' ? 'Buscar Gastos' : 'Search Expenses'}</h2>
@@ -122,11 +122,13 @@ export default function SearchExpenses() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={language === 'es' ? 'Buscar gastos...' : 'Search expenses...'}
-              className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
+              aria-label={language === 'es' ? 'Buscar gastos' : 'Search expenses'}
+              className="flex-1 border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
             />
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`px-3 py-2 rounded-lg text-sm font-medium border transition ${
+              aria-expanded={showFilters}
+              className={`px-3 py-2 rounded-lg text-sm font-medium border transition min-h-[44px] focus-ring ${
                 showFilters || hasActiveFilters
                   ? 'bg-indigo-600 text-white border-indigo-600'
                   : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
@@ -144,7 +146,8 @@ export default function SearchExpenses() {
                 <select
                   value={groupId}
                   onChange={(e) => setGroupId(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  aria-label={language === 'es' ? 'Grupo' : 'Group'}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                 >
                   <option value="">{language === 'es' ? 'Todos los grupos' : 'All groups'}</option>
                   {groups.map(g => (
@@ -160,7 +163,8 @@ export default function SearchExpenses() {
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    aria-label={language === 'es' ? 'Fecha desde' : 'Start date'}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                   />
                 </div>
                 <div>
@@ -169,7 +173,8 @@ export default function SearchExpenses() {
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    aria-label={language === 'es' ? 'Fecha hasta' : 'End date'}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                   />
                 </div>
               </div>
@@ -183,7 +188,8 @@ export default function SearchExpenses() {
                     value={minAmount}
                     onChange={(e) => setMinAmount(e.target.value)}
                     placeholder="0"
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    aria-label={language === 'es' ? 'Monto mínimo' : 'Minimum amount'}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                   />
                 </div>
                 <div>
@@ -194,7 +200,8 @@ export default function SearchExpenses() {
                     value={maxAmount}
                     onChange={(e) => setMaxAmount(e.target.value)}
                     placeholder="∞"
-                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                    aria-label={language === 'es' ? 'Monto máximo' : 'Maximum amount'}
+                    className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                   />
                 </div>
               </div>
@@ -204,7 +211,8 @@ export default function SearchExpenses() {
                 <select
                   value={splitType}
                   onChange={(e) => setSplitType(e.target.value)}
-                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                  aria-label={t('split_type')}
+                  className="w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                 >
                   <option value="">{language === 'es' ? 'Cualquier tipo' : 'Any type'}</option>
                   <option value="equal">{t('equal')}</option>
@@ -223,7 +231,7 @@ export default function SearchExpenses() {
                     setMaxAmount('');
                     setSplitType('');
                   }}
-                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg px-3 py-2 text-sm font-medium transition"
+                  className="w-full bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-lg px-3 py-2 text-sm font-medium transition focus-ring min-h-[44px]"
                 >
                   {language === 'es' ? 'Limpiar filtros' : 'Clear filters'}
                 </button>
@@ -245,7 +253,9 @@ export default function SearchExpenses() {
             <p className="text-slate-500">{language === 'es' ? 'Buscando...' : 'Searching...'}</p>
           </div>
         ) : searchParams.length > 0 && results.length === 0 ? (
-          <EmptyState type="search" />
+          <div role="alert">
+            <EmptyState type="search" />
+          </div>
         ) : (
           <div className="space-y-4">
             {Object.entries(monthlyResults).map(([month, exps]) => (
