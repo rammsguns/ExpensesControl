@@ -133,7 +133,7 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               {[
                 { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
-                { to: '/add-expense', icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => {
+                { icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => {
                   if (groups && groups.length > 0 && groups[0]?.id) {
                     navigate(`/add-expense/${groups[0].id}`);
                   } else {
