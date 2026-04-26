@@ -7,15 +7,15 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
-import { SkeletonCard } from '../components/SkeletonLoaders';
+import { SkeletonExpenseList } from '../components/SkeletonLoaders';
 import { EmptyState } from '../components/EmptyStates';
 import ExpenseCard from '../components/ExpenseCard';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Plus, Handshake, Search, Receipt, Pencil, Trash2, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal } from 'lucide-react';
+import { ArrowLeft, Plus, Handshake, Receipt, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal } from 'lucide-react';
 
 const CATEGORY_ICONS = {
   food: { icon: Receipt, bg: 'bg-pink-100 text-pink-600' },
-  transport: { icon: Search, bg: 'bg-blue-100 text-blue-600' },
+  transport: { icon: MoreHorizontal, bg: 'bg-blue-100 text-blue-600' },
   shopping: { icon: Receipt, bg: 'bg-emerald-100 text-emerald-600' },
   home: { icon: Home, bg: 'bg-amber-100 text-amber-600' },
   entertainment: { icon: Heart, bg: 'bg-purple-100 text-purple-600' },
@@ -23,23 +23,11 @@ const CATEGORY_ICONS = {
   other: { icon: MoreHorizontal, bg: 'bg-gray-100 text-gray-600' },
 };
 
-function guessCategory(description) {
-  const d = (description || '').toLowerCase();
-  if (/mercado|comal|grocer|super|abarrotes|cerveceria|comida|dinner|lunch|restaur/.test(d)) return 'food';
-  if (/gas|gasolina|taxi|uber|gasolinera|fuel/.test(d)) return 'transport';
-  if (/hotel|airbnb|hospedaje|casa|remodel|rent/.test(d)) return 'home';
-  if (/compra|shop|store|tienda|amazon/.test(d)) return 'shopping';
-  if (/viaje|trip|vuelo|ticket/.test(d)) return 'travel';
-  if (/fiesta|party|bar|cantina|entreten/.test(d)) return 'entertainment';
-  return 'other';
-}
-
 function groupByMonth(expenses) {
   const groups = {};
   expenses.forEach(exp => {
     const date = new Date(exp.created_at);
     const key = date.toLocaleString('default', { month: 'long', year: 'numeric' });
-    // Capitalize first letter
     const label = key.charAt(0).toUpperCase() + key.slice(1);
     if (!groups[label]) groups[label] = [];
     groups[label].push(exp);
@@ -82,21 +70,43 @@ export default function GroupDetail() {
       setMemberEmail('');
       setShowAddMember(false);
       qc.invalidateQueries({ queryKey: ['group', id] });
+      toast.success(language === 'es' ? 'Miembro agregado' : 'Member added');
     } catch (err) {
-      setAddError(err.response?.data?.error || 'Failed to add member');
+      setAddError(err.response?.data?.error || (language === 'es' ? 'Error al agregar miembro' : 'Failed to add member'));
     }
   };
 
-  if (isLoading) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><p>Loading...</p></div>;
-  if (!group) return <div className="min-h-screen bg-slate-50 flex items-center justify-center"><p>Group not found</p></div>;
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-50 pb-24">
+        <Navbar />
+        <div className="max-w-lg mx-auto px-4 py-6">
+          <SkeletonExpenseList count={3} />
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (!group) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center px-4 pb-24">
+        <Navbar />
+        <div className="text-center">
+          <p className="text-slate-500 text-lg">{language === 'es' ? 'Grupo no encontrado' : 'Group not found'}</p>
+          <button onClick={() => navigate('/')} className="mt-4 text-indigo-600 font-medium focus-ring rounded-lg px-3 py-2">
+            {language === 'es' ? 'Volver al inicio' : 'Go home'}
+          </button>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   const myBalance = balances.find(b => b.userId === user?.id);
   const others = balances.filter(b => b.userId !== user?.id);
-
-  // Find who I owe / who owes me the most
   const iOwe = others.filter(b => b.balance < -0.01);
   const owedMe = others.filter(b => b.balance > 0.01);
-  const settled = others.filter(b => Math.abs(b.balance) <= 0.01);
 
   const monthlyExpenses = groupByMonth(expenses);
   const members = group.members || [];
@@ -105,185 +115,221 @@ export default function GroupDetail() {
     <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
       <PageTransition>
-      <div className="max-w-lg mx-auto">
-        {/* Group Header */}
-        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-4 pt-5 pb-6 -mt-px">
-          <div className="flex items-center gap-3 mb-1">
-            <button onClick={() => navigate('/')} className="flex items-center gap-1 text-white/80 hover:text-white text-2xl font-semibold">
-              <ArrowLeft size={24} />
-              {language === 'es' ? 'Grupos' : 'Groups'}
-            </button>
-            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-2xl ml-auto" title="Home">
-              <Home size={24} />
-            </button>
+        <div className="max-w-lg mx-auto">
+          {/* Group Header */}
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white px-5 pt-6 pb-8">
+            <div className="flex items-center gap-3 mb-3">
+              <button 
+                onClick={() => navigate('/')} 
+                className="min-h-[44px] min-w-[44px] flex items-center gap-1 text-white/80 hover:text-white transition-colors duration-150 rounded-lg focus-ring"
+                aria-label={language === 'es' ? 'Volver a grupos' : 'Back to groups'}
+              >
+                <ArrowLeft size={24} aria-hidden="true" />
+              </button>
+              <span className="text-sm font-medium text-white/80">
+                {language === 'es' ? 'Grupos' : 'Groups'}
+              </span>
+            </div>
+            <h1 className="text-2xl md:text-3xl font-bold leading-tight">{group.name}</h1>
+            <div className="flex items-center gap-3 mt-3 flex-wrap">
+              <span className="bg-white/20 text-white text-sm px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                <Users size={14} aria-hidden="true" />
+                {members.length} {language === 'es' ? 'personas' : 'people'}
+              </span>
+              <button
+                onClick={() => setShowAddMember(true)}
+                className="bg-white/20 hover:bg-white/30 text-white text-sm px-3 py-1.5 rounded-full transition-colors duration-150 flex items-center gap-1.5 focus-ring"
+              >
+                <Plus size={14} aria-hidden="true" />
+                {language === 'es' ? 'Agregar' : 'Add'}
+              </button>
+            </div>
           </div>
-          <h1 className="text-2xl font-bold">{group.name}</h1>
-          <div className="flex gap-2 mt-2">
-            <span className="bg-white/20 text-white text-xs px-3 py-1 rounded-full">
-              <Users size={14} /> {members.length} {language === 'es' ? 'personas' : 'people'}
-            </span>
-            <button
-              onClick={() => setShowAddMember(true)}
-              className="bg-white/20 hover:bg-white/30 text-white text-xs px-3 py-1 rounded-full transition"
-            >
-              <Plus size={14} /> {language === 'es' ? 'Agregar' : 'Add'}
-            </button>
-          </div>
-        </div>
 
-        {/* Balance Statement */}
-        <div className="bg-white border-b px-5 py-5">
-          {iOwe.length === 0 && owedMe.length === 0 ? (
-            <p className="text-xl font-semibold text-slate-600">
-              <CheckCircle size={20} className="inline mr-2" /> {language === 'es' ? 'Todo saldado' : 'All settled up'}
-            </p>
-          ) : (
-            <div className="space-y-2">
-              {iOwe.map(b => (
-                <p key={b.userId} className="text-lg font-semibold text-rose-600">
-                  {language === 'es' ? 'Debes a' : 'You owe'} {b.name} <span className="text-xl font-bold text-orange-500">MX$ {Math.abs(b.balance).toFixed(2)}</span>
-                </p>
-              ))}
-              {owedMe.map(b => (
-                <p key={b.userId} className="text-lg font-semibold text-slate-900">
-                  {b.name} {language === 'es' ? 'te debe' : 'owes you'} <span className="text-xl font-bold text-emerald-600">MX$ {b.balance.toFixed(2)}</span>
-                </p>
+          {/* Balance Statement */}
+          <div className="bg-white border-b px-5 py-5">
+            {iOwe.length === 0 && owedMe.length === 0 ? (
+              <p className="text-lg font-semibold text-slate-600 flex items-center gap-2">
+                <CheckCircle size={20} className="text-emerald-500" aria-hidden="true" />
+                {language === 'es' ? 'Todo saldado' : 'All settled up'}
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {iOwe.map(b => (
+                  <p key={b.userId} className="text-base font-semibold text-rose-600 leading-relaxed">
+                    {language === 'es' ? 'Debes a' : 'You owe'} {b.name}{' '}
+                    <span className="font-bold text-orange-500">MX$ {Math.abs(b.balance).toFixed(2)}</span>
+                  </p>
+                ))}
+                {owedMe.map(b => (
+                  <p key={b.userId} className="text-base font-semibold text-slate-900 leading-relaxed">
+                    {b.name} {language === 'es' ? 'te debe' : 'owes you'}{' '}
+                    <span className="font-bold text-emerald-600">MX$ {b.balance.toFixed(2)}</span>
+                  </p>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-2 px-5 py-4 bg-white border-b overflow-x-auto scrollbar-hide">
+            <Link
+              to={`/settle/${id}`}
+              className="min-h-[48px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring"
+            >
+              <Handshake size={18} aria-hidden="true" />
+              {language === 'es' ? 'Saldar' : 'Settle up'}
+            </Link>
+            <button
+              onClick={() => setShowBalances(!showBalances)}
+              className={`min-h-[48px] rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring ${
+                showBalances 
+                  ? 'bg-indigo-50 text-indigo-700 border border-indigo-200' 
+                  : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+              }`}
+            >
+              <Scale size={18} aria-hidden="true" />
+              {language === 'es' ? 'Saldos' : 'Balances'}
+            </button>
+            <Link
+              to={`/add-expense/${id}`}
+              className="min-h-[48px] bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring"
+            >
+              <Receipt size={18} aria-hidden="true" />
+              {language === 'es' ? 'Gasto' : 'Expense'}
+            </Link>
+          </div>
+
+          {/* Balances Panel */}
+          {showBalances && (
+            <div className="bg-white border-b px-5 py-5 space-y-3">
+              {balances.map(b => (
+                <div key={b.userId} className="flex justify-between items-center py-2">
+                  <span className="font-medium text-slate-900 text-sm">
+                    {b.userId === user?.id ? (language === 'es' ? 'Tú' : 'You') : b.name}
+                  </span>
+                  <span className={`font-bold text-base ${
+                    b.balance > 0.01 ? 'text-emerald-600' : b.balance < -0.01 ? 'text-rose-600' : 'text-slate-400'
+                  }`}>
+                    {Math.abs(b.balance) <= 0.01
+                      ? (language === 'es' ? 'Saldado' : 'Settled')
+                      : b.balance > 0
+                        ? `+MX$ ${b.balance.toFixed(2)}`
+                        : `-MX$ ${Math.abs(b.balance).toFixed(2)}`
+                    }
+                  </span>
+                </div>
               ))}
             </div>
           )}
+
+          {/* Members pills */}
+          <div className="bg-slate-50 px-5 py-4 border-b">
+            <div className="flex flex-wrap gap-2">
+              {members.map(m => (
+                <div key={m.id} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 border border-slate-200">
+                  <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-sm font-bold text-indigo-800">
+                    {m.name.charAt(0).toUpperCase()}
+                  </div>
+                  <span className="text-sm font-medium text-slate-900">{m.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Expenses by Month */}
+          <div className="px-4 py-6">
+            {expenses.length === 0 ? (
+              <EmptyState type="expenses" groupId={id} />
+            ) : (
+              Object.entries(monthlyExpenses).map(([month, exps]) => (
+                <div key={month} className="mb-6">
+                  <h3 className="text-sm font-semibold text-slate-500 mb-3 uppercase tracking-wide leading-relaxed">{month}</h3>
+                  <div className="space-y-3">
+                    {exps.map(exp => (
+                      <ExpenseCard
+                        key={exp.id}
+                        expense={exp}
+                        currentUser={user}
+                        onEdit={(expense) => navigate(`/edit-expense/${id}/${expense.id}`)}
+                        onDelete={async (expenseId) => {
+                          try {
+                            await api.delete(`/expenses/${expenseId}`);
+                            qc.invalidateQueries({ queryKey: ['expenses', id] });
+                            qc.invalidateQueries({ queryKey: ['balances', id] });
+                            toast.success(typeof t === 'function' ? t('toast_expense_deleted') : 'Expense deleted');
+                          } catch (err) {
+                            toast.error(err.response?.data?.error || 'Failed to delete expense');
+                          }
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="flex gap-3 px-5 py-4 bg-white border-b overflow-x-auto">
-          <Link
-            to={`/settle/${id}`}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
-          >
-            <Handshake size={18} className="inline mr-2" /> {language === 'es' ? 'Saldar' : 'Settle up'}
-          </Link>
-          <button
-            onClick={() => setShowBalances(!showBalances)}
-            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
-          >
-            <Scale size={18} className="inline mr-2" /> {language === 'es' ? 'Saldos' : 'Balances'}
-          </button>
+        {/* FAB */}
+        <div className="fixed right-4 bottom-28 flex flex-col gap-3 z-30">
           <Link
             to={`/add-expense/${id}`}
-            className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-5 py-3 text-base font-medium whitespace-nowrap transition shadow-sm"
+            className="w-14 h-14 min-h-[56px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-all duration-150 focus-ring"
+            aria-label={language === 'es' ? 'Agregar gasto' : 'Add expense'}
           >
-            <Receipt size={18} className="inline mr-2" /> {language === 'es' ? 'Totales' : 'Totals'}
+            <Plus size={28} aria-hidden="true" />
           </Link>
         </div>
 
-        {/* Balances Panel (toggle) */}
-        {showBalances && (
-          <div className="bg-white border-b px-5 py-4 space-y-3">
-            {balances.map(b => (
-              <div key={b.userId} className="flex justify-between items-center">
-                <span className="font-semibold text-slate-900 text-base">
-                  {b.userId === user?.id ? (language === 'es' ? 'Tú' : 'You') : b.name}
-                </span>
-                <span className={`font-bold text-lg ${b.balance > 0.01 ? 'text-emerald-600' : b.balance < -0.01 ? 'text-rose-600' : 'text-slate-400'}`}>
-                  {Math.abs(b.balance) <= 0.01
-                    ? (language === 'es' ? 'Saldado' : 'Settled')
-                    : b.balance > 0
-                      ? `+MX$ ${b.balance.toFixed(2)}`
-                      : `-MX$ ${Math.abs(b.balance).toFixed(2)}`
-                  }
-                </span>
+        {/* Add Member Modal */}
+        {showAddMember && (
+          <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 px-4 safe-area-bottom">
+            <form onSubmit={addMember} className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md p-6 space-y-5">
+              <h3 className="text-lg font-bold text-slate-900">{language === 'es' ? 'Agregar miembro' : 'Add member'}</h3>
+              
+              {addError && (
+                <div className="bg-rose-50 border border-rose-200 text-rose-700 p-4 rounded-xl text-sm flex items-start gap-2" role="alert" aria-live="polite">
+                  <X size={18} className="flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <p>{addError}</p>
+                </div>
+              )}
+              
+              <div>
+                <label htmlFor="member-email" className="block text-sm font-medium text-slate-700 mb-1.5">
+                  {typeof t === 'function' ? t('member_email') || 'Email' : 'Email'}
+                </label>
+                <input
+                  id="member-email"
+                  type="email"
+                  value={memberEmail}
+                  onChange={(e) => { setMemberEmail(e.target.value); setAddError(''); }}
+                  className="w-full border border-slate-300 rounded-xl px-4 py-3 text-base min-h-[48px] transition-all duration-150 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  required
+                  autoFocus
+                />
               </div>
-            ))}
+              
+              <div className="flex gap-3">
+                <button 
+                  type="submit" 
+                  className="flex-1 min-h-[48px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl px-4 py-3 font-medium transition-all duration-150 active:scale-[0.97] focus-ring"
+                >
+                  {typeof t === 'function' ? t('save') : 'Save'}
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => { setShowAddMember(false); setAddError(''); }} 
+                  className="flex-1 min-h-[48px] bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl px-4 py-3 font-medium transition-all duration-150 active:scale-[0.97] focus-ring"
+                >
+                  {typeof t === 'function' ? t('cancel') : 'Cancel'}
+                </button>
+              </div>
+            </form>
           </div>
         )}
-
-        {/* Members pills */}
-        <div className="bg-slate-50 px-5 py-4 border-b">
-          <div className="flex flex-wrap gap-3">
-            {members.map(m => (
-              <div key={m.id} className="flex items-center gap-2 bg-white rounded-full px-4 py-2 border border-slate-200">
-                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center text-sm font-bold text-indigo-800">
-                  {m.name.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-sm font-medium text-slate-900">{m.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Expenses by Month */}
-        <div className="px-4 py-4">
-          {expenses.length === 0 ? (
-            <EmptyState type="expenses" groupId={id} />
-          ) : (
-            Object.entries(monthlyExpenses).map(([month, exps]) => (
-              <div key={month} className="mb-4">
-                <h3 className="text-sm font-semibold text-slate-500 mb-2">{month}</h3>
-                <div className="space-y-3">
-                  {exps.map(exp => (
-                    <ExpenseCard
-                      key={exp.id}
-                      expense={exp}
-                      currentUser={user}
-                      onEdit={(expense) => navigate(`/edit-expense/${id}/${expense.id}`)}
-                      onDelete={async (expenseId) => {
-                        try {
-                          await api.delete(`/expenses/${expenseId}`);
-                          qc.invalidateQueries({ queryKey: ['expenses', id] });
-                          qc.invalidateQueries({ queryKey: ['balances', id] });
-                          toast.success(t('toast_expense_deleted'));
-                        } catch (err) {
-                          alert(err.response?.data?.error || 'Failed to delete expense');
-                        }
-                      }}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))
-          )}
-        </div>
-      </div>
-
-      {/* FABs */}
-      <div className="fixed right-4 bottom-24 flex flex-col gap-3 z-30">
-        <Link
-          to={`/add-expense/${id}`}
-          className="w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center text-lg font-bold active:scale-95 transition"
-        >
-          <Plus size={28} />
-        </Link>
-      </div>
-
-      {/* Add Member Modal */}
-      {showAddMember && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
-          <form onSubmit={addMember} className="bg-white rounded-xl p-6 w-full max-w-md space-y-4">
-            <h3 className="text-lg font-bold">{language === 'es' ? 'Agregar miembro' : 'Add member'}</h3>
-            {addError && <div className="bg-rose-50 text-rose-600 p-3 rounded-lg text-sm">{addError}</div>}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1">{t('member_email')}</label>
-              <input
-                type="email"
-                value={memberEmail}
-                onChange={(e) => setMemberEmail(e.target.value)}
-                className="w-full border rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none"
-                required
-              />
-            </div>
-            <div className="flex gap-3">
-              <button type="submit" className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2 font-medium">
-                {t('save')}
-              </button>
-              <button type="button" onClick={() => { setShowAddMember(false); setAddError(''); }} className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2 font-medium">
-                {t('cancel')}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-
-      <BottomNav />
       </PageTransition>
+      <BottomNav />
     </div>
   );
 }

@@ -9,7 +9,7 @@ import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
 import { SkeletonGroupGrid } from '../components/SkeletonLoaders';
 import { EmptyState } from '../components/EmptyStates';
-import { Search, PlusCircle, Users, Handshake, Home, Plus, Plane, Heart, MoreHorizontal } from 'lucide-react';
+import { Search, PlusCircle, Users, Handshake, Home, Plus, Plane, Heart, MoreHorizontal, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const GROUP_TYPES = [
@@ -35,7 +35,6 @@ export default function Dashboard() {
     queryFn: () => api.get('/balances').then(r => r.data),
   });
 
-  // Fetch all friends from existing groups for quick-add
   const { data: existingFriends = [] } = useQuery({
     queryKey: ['friends'],
     queryFn: () => api.get('/groups/friends/all').then(r => r.data),
@@ -50,6 +49,7 @@ export default function Dashboard() {
   const [memberList, setMemberList] = React.useState([]);
   const [memberError, setMemberError] = React.useState('');
   const [creating, setCreating] = React.useState(false);
+  const [fieldErrors, setFieldErrors] = React.useState({});
 
   const addMember = async () => {
     setMemberError('');
@@ -70,9 +70,16 @@ export default function Dashboard() {
     setMemberList(prev => prev.filter(m => m.email !== email));
   };
 
+  const validateCreateForm = () => {
+    const errors = {};
+    if (!groupName.trim()) errors.groupName = language === 'es' ? 'Nombre requerido' : 'Group name is required';
+    setFieldErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const createGroup = async (e) => {
     e.preventDefault();
-    if (!groupName.trim()) return;
+    if (!validateCreateForm()) return;
     setCreating(true);
     try {
       const res = await api.post('/groups', { name: groupName, description: groupDesc, type: groupType });
@@ -81,13 +88,14 @@ export default function Dashboard() {
         try { await api.post(`/groups/${groupId}/members`, { email: member.email }); } catch {}
       }
       setShowCreate(false);
-      toast.success(t('group_created'));
+      toast.success(typeof t === 'function' ? t('group_created') : 'Group created!');
       setGroupName(''); setGroupDesc(''); setGroupType('home');
       setMemberList([]); setMemberEmail('');
+      setFieldErrors({});
       qc.invalidateQueries({ queryKey: ['groups'] });
       navigate(`/group/${groupId}`);
     } catch (err) {
-      toast.error(err.response?.data?.error || t('error'));
+      toast.error(err.response?.data?.error || (typeof t === 'function' ? t('error') : 'Something went wrong'));
     }
     setCreating(false);
   };
@@ -99,255 +107,244 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50 pb-24">
       <Navbar />
       <PageTransition>
-      <div className="max-w-lg mx-auto px-4 py-5">
-        {/* Total Balance */}
-        <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-5 text-white mb-4">
-          <h3 className="font-semibold text-indigo-100 mb-2 text-sm">{t('total_balance')}</h3>
-          {userBalance && (
-            <div className="text-4xl font-bold mb-2">
-              MX$ {Math.abs(userBalance.balance).toFixed(2)}
-              <span className="text-lg font-normal ml-2">
-                {userBalance.balance >= 0 ? t('owes_you') : t('you_owe')}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Quick Actions */}
-        <div className="mb-6">
-          <h3 className="font-semibold text-slate-900 text-lg mb-3">{t('quick_actions')}</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-2 gap-4">
-            <Link
-              to="/search"
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <Search size={24} />
-              </div>
-              <span className="text-slate-600 font-medium">
-                {language === 'es' ? 'Buscar' : 'Search'}
-              </span>
-            </Link>
-            <button
-              onClick={() => navigate('/add-expense')}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <div className="w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center text-emerald-600">
-                <PlusCircle size={24} />
-              </div>
-              <span className="text-slate-600 font-medium">
-                {language === 'es' ? 'Gasto' : 'Expense'}
-              </span>
-            </button>
-            <button
-              onClick={() => setShowCreate(true)}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <Plus size={24} />
-              </div>
-              <span className="text-slate-600 font-medium">
-                {t('create_group')}
-              </span>
-            </button>
-            <Link
-              to={`/settle/${userBalance?.groupId || 'groups'}`}
-              className="bg-white rounded-xl shadow-sm border border-slate-200 p-5 flex flex-col items-center justify-center gap-2 hover:border-indigo-300 hover:shadow-md transition transform hover:scale-[1.02] active:scale-[0.98]"
-            >
-              <div className="w-12 h-12 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600">
-                <Handshake size={24} />
-              </div>
-              <span className="text-slate-600 font-medium">
-                {language === 'es' ? 'Saldar' : 'Settle'}
-              </span>
-            </Link>
-          </div>
-        </div>
-
-        {/* Your Groups */}
-        <div>
-          <h3 className="font-semibold text-slate-900 text-lg mb-3">
-            {language === 'es' ? 'Tus Grupos' : 'Your Groups'}
-          </h3>
-
-          {groupsLoading ? (
-            <div className="max-w-lg mx-auto px-4 py-6">
-              <SkeletonGroupGrid count={3} />
-            </div>
-          ) : groups.length === 0 ? (
-          <EmptyState type="groups" onAction={() => setShowCreate(true)} />
-          ) : (
-            <div className="grid grid-cols-2 gap-4">
-              {groups.map(g => (
-                <GroupCard key={g.id} group={g} icon={getGroupIcon(g.type)} userId={user?.id} />
-              ))}
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* FAB - Create Group */}
-      <button
-        onClick={() => setShowCreate(true)}
-        className="fixed right-4 bottom-24 w-14 h-14 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg flex items-center justify-center text-2xl z-30 active:scale-95 transition shadow-indigo-200"
-      >
-        <Plus size={28} />
-      </button>
-
-      {/* Create Group Modal */}
-      {showCreate && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
-          <div className="bg-white rounded-t-2xl sm:rounded-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center rounded-t-2xl">
-              <button onClick={() => { setShowCreate(false); setMemberList([]); }} className="text-slate-500 font-medium">
-                {t('cancel')}
-              </button>
-              <h3 className="font-bold text-slate-900">{t('create_group')}</h3>
-              <button onClick={createGroup} disabled={creating || !groupName.trim()} className="text-indigo-600 font-bold disabled:opacity-40">
-                {creating ? t('creating') : t('create')}
-              </button>
-            </div>
-
-            <div className="p-4 space-y-5">
-              {/* Group Type */}
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {language === 'es' ? 'Tipo de grupo' : 'Group type'}
-                </label>
-                <div className="grid grid-cols-4 gap-2">
-                  {GROUP_TYPES.map(type => (
-                    <button
-                      key={type.id}
-                      type="button"
-                      onClick={() => setGroupType(type.id)}
-                      className={`flex flex-col items-center py-3 px-2 rounded-xl border-2 transition ${
-                        groupType === type.id
-                          ? 'border-indigo-500 bg-indigo-50'
-                          : 'border-slate-200 bg-slate-50 hover:border-slate-300'
-                      }`}
-                    >
-                      <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm">
-                        <type.icon size={20} className="text-indigo-600" />
-                      </div>
-                      <span className="text-xs font-medium text-slate-700">
-                        {language === 'es' ? type.labelEs : type.labelEn}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{t('group_name')}</label>
-                <input
-                  type="text"
-                  value={groupName}
-                  onChange={(e) => setGroupName(e.target.value)}
-                  placeholder={language === 'es' ? 'Ej: Casa volcanes credito' : 'e.g. House expenses'}
-                  className="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
-                  autoFocus
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">{t('description')}</label>
-                <input
-                  type="text"
-                  value={groupDesc}
-                  onChange={(e) => setGroupDesc(e.target.value)}
-                  placeholder={language === 'es' ? 'Descripción opcional' : 'Optional description'}
-                  className="w-full border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1">
-                  {language === 'es' ? 'Agregar miembros' : 'Add members'}
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    type="email"
-                    value={memberEmail}
-                    onChange={(e) => { setMemberEmail(e.target.value); setMemberError(''); }}
-                    onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); }}}
-                    placeholder={language === 'es' ? 'correo@ejemplo.com' : 'email@example.com'}
-                    className="flex-1 border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
-                  />
-                  <button type="button" onClick={addMember} aria-label="Add member" className="bg-indigo-600 touch-target min-h-[44px] min-w-[44px] hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium text-sm flex-shrink-0">
-                    <Plus size={20} />
-                  </button>
-                </div>
-                {memberError && <p className="text-rose-500 text-xs mt-1">{memberError}</p>}
-              </div>
-
-              {/* Quick-add from existing friends */}
-              {existingFriends.length > 0 && (
-                <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    {language === 'es' ? 'Amigos recientes' : 'Recent friends'}
-                  </label>
-                  <div className="flex flex-wrap gap-2">
-                    {existingFriends
-                      .filter(f => !memberList.some(m => m.email === f.email))
-                      .map(f => (
-                        <button
-                          key={f.id}
-                          type="button"
-                          onClick={() => setMemberList(prev => [...prev, { email: f.email, name: f.name }])}
-                          className="flex items-center gap-1.5 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-full px-3 py-1.5 transition active:scale-95"
-                        >
-                          <div className="w-5 h-5 rounded-full bg-indigo-200 flex items-center justify-center text-indigo-800 font-bold text-[10px]">
-                            {f.name.charAt(0).toUpperCase()}
-                          </div>
-                          <span className="text-xs font-medium text-indigo-800">{f.name}</span>
-                        </button>
-                      ))
-                    }
-                  </div>
-                </div>
-              )}
-
-              {/* Already added members */}
-              {memberList.length > 0 && (
-                <div className="space-y-2">
-                  {memberList.map(m => (
-                    <div key={m.email} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2.5">
-                      <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                          {m.name.charAt(0).toUpperCase()}
-                        </div>
-                        <span className="text-sm text-slate-900">{m.name}</span>
-                        <span className="text-xs text-slate-400">{m.email}</span>
-                      </div>
-                      <button onClick={() => removeMember(m.email)} aria-label="Remove member" className="text-rose-400 touch-target min-h-[44px] min-w-[44px] hover:text-rose-600 text-lg">
-                        <MoreHorizontal size={20} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex items-center gap-2 text-sm text-slate-500 bg-slate-50 rounded-lg px-3 py-2.5">
-                <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm">
-                  {user?.name?.charAt(0).toUpperCase()}
-                </div>
-                <span className="text-slate-900">{user?.name}</span>
-                <span className="text-xs text-indigo-600 ml-auto">
-                  {language === 'es' ? '(tú — agregado automáticamente)' : '(you — added automatically)'}
+        <div className="max-w-lg mx-auto px-4 py-6">
+          {/* Total Balance */}
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 rounded-2xl shadow-lg p-5 md:p-6 text-white mb-6">
+            <h3 className="font-semibold text-indigo-100 mb-2 text-sm leading-relaxed">
+              {typeof t === 'function' ? t('total_balance') : 'Total Balance'}
+            </h3>
+            {userBalance && (
+              <div className="flex items-baseline gap-2 flex-wrap">
+                <span className="text-3xl md:text-4xl font-bold leading-tight">
+                  MX$ {Math.abs(userBalance.balance).toFixed(2)}
+                </span>
+                <span className="text-base font-normal text-indigo-200 leading-relaxed">
+                  {userBalance.balance >= 0 ? (typeof t === 'function' ? t('owes_you') : 'owes you') : (typeof t === 'function' ? t('you_owe') : 'you owe')}
                 </span>
               </div>
+            )}
+          </div>
+
+          {/* Quick Actions */}
+          <div className="mb-8">
+            <h3 className="font-semibold text-slate-900 text-lg mb-4 leading-snug">
+              {typeof t === 'function' ? t('quick_actions') : 'Quick Actions'}
+            </h3>
+            <div className="grid grid-cols-2 gap-3 md:gap-4">
+              {[
+                { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
+                { to: '/add-expense', icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => navigate('/add-expense') },
+                { icon: Plus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: typeof t === 'function' ? t('create_group') : 'Create Group', isButton: true, onClick: () => setShowCreate(true) },
+                { to: `/settle/${userBalance?.groupId || 'groups'}`, icon: Handshake, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Saldar' : 'Settle' },
+              ].map((item, i) => {
+                const content = (
+                  <>
+                    <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center`}>
+                      <item.icon size={24} className={item.text} aria-hidden="true" />
+                    </div>
+                    <span className="text-slate-700 font-medium text-sm leading-snug">{item.label}</span>
+                  </>
+                );
+                const classes = "bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out min-h-[100px]";
+                return item.isButton ? (
+                  <button key={i} onClick={item.onClick} className={classes}>{content}</button>
+                ) : (
+                  <Link key={i} to={item.to} className={classes}>{content}</Link>
+                );
+              })}
             </div>
           </div>
-        </div>
-      )}
 
+          {/* Your Groups */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-slate-900 text-lg leading-snug">
+                {language === 'es' ? 'Tus Grupos' : 'Your Groups'}
+              </h3>
+            </div>
+
+            {groupsLoading ? (
+              <SkeletonGroupGrid count={4} />
+            ) : groups.length === 0 ? (
+              <EmptyState type="groups" onAction={() => setShowCreate(true)} />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {groups.map(g => (
+                  <GroupCard key={g.id} group={g} icon={getGroupIcon(g.type)} userId={user?.id} />
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* FAB - Create Group */}
+        <button
+          onClick={() => setShowCreate(true)}
+          className="fixed right-4 bottom-28 w-14 h-14 min-h-[56px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-full shadow-lg flex items-center justify-center z-30 transition-all duration-150 ease-in-out active:scale-95 focus-ring"
+          aria-label={typeof t === 'function' ? t('create_group') : 'Create group'}
+        >
+          <Plus size={28} aria-hidden="true" />
+        </button>
+
+        {/* Create Group Modal */}
+        {showCreate && (
+          <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center">
+            <div className="bg-white rounded-t-2xl sm:rounded-2xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+              <div className="sticky top-0 bg-white border-b px-4 py-3 flex justify-between items-center rounded-t-2xl z-10">
+                <button 
+                  onClick={() => { setShowCreate(false); setMemberList([]); setFieldErrors({}); }} 
+                  className="min-h-[44px] px-3 text-slate-500 font-medium hover:text-slate-700 transition-colors duration-150 rounded-lg focus-ring"
+                >
+                  {typeof t === 'function' ? t('cancel') : 'Cancel'}
+                </button>
+                <h3 className="font-bold text-slate-900 text-base">{typeof t === 'function' ? t('create_group') : 'Create Group'}</h3>
+                <button 
+                  onClick={createGroup} 
+                  disabled={creating || !groupName.trim()} 
+                  className="min-h-[44px] px-3 text-indigo-600 font-bold disabled:opacity-40 transition-opacity duration-150 rounded-lg focus-ring"
+                >
+                  {creating ? (typeof t === 'function' ? t('creating') : 'Creating...') : (typeof t === 'function' ? t('create') : 'Create')}
+                </button>
+              </div>
+
+              <div className="p-5 space-y-6">
+                {/* Group Type */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-3">
+                    {language === 'es' ? 'Tipo de grupo' : 'Group type'}
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {GROUP_TYPES.map(type => (
+                      <button
+                        key={type.id}
+                        type="button"
+                        onClick={() => setGroupType(type.id)}
+                        className={`flex flex-col items-center py-3 px-2 rounded-xl border-2 transition-all duration-150 min-h-[80px] ${
+                          groupType === type.id
+                            ? 'border-indigo-500 bg-indigo-50'
+                            : 'border-slate-200 bg-slate-50 hover:border-slate-300'
+                        }`}
+                      >
+                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center mb-1 shadow-sm">
+                          <type.icon size={20} className="text-indigo-600" aria-hidden="true" />
+                        </div>
+                        <span className="text-xs font-medium text-slate-700 leading-tight">
+                          {language === 'es' ? type.labelEs : type.labelEn}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    {typeof t === 'function' ? t('group_name') : 'Group Name'}
+                  </label>
+                  <input
+                    type="text"
+                    value={groupName}
+                    onChange={(e) => { setGroupName(e.target.value); setFieldErrors(prev => ({ ...prev, groupName: '' })); }}
+                    placeholder={language === 'es' ? 'Ej: Casa volcanes credito' : 'e.g. House expenses'}
+                    className={`w-full border rounded-xl px-4 py-3 text-base min-h-[48px] transition-all duration-150 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none ${
+                      fieldErrors.groupName ? 'border-rose-300 bg-rose-50' : 'border-slate-300'
+                    }`}
+                    autoFocus
+                    required
+                    aria-invalid={!!fieldErrors.groupName}
+                    aria-describedby={fieldErrors.groupName ? 'group-name-error' : undefined}
+                  />
+                  {fieldErrors.groupName && (
+                    <p id="group-name-error" className="mt-1.5 text-sm text-rose-600" role="alert">{fieldErrors.groupName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    {typeof t === 'function' ? t('description') : 'Description'}
+                  </label>
+                  <input
+                    type="text"
+                    value={groupDesc}
+                    onChange={(e) => setGroupDesc(e.target.value)}
+                    placeholder={language === 'es' ? 'Descripción opcional' : 'Optional description'}
+                    className="w-full border border-slate-300 rounded-xl px-4 py-3 text-base min-h-[48px] transition-all duration-150 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                  />
+                </div>
+
+                {/* Members */}
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                    {typeof t === 'function' ? t('members') || 'Members' : 'Members'}
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="email"
+                      value={memberEmail}
+                      onChange={(e) => { setMemberEmail(e.target.value); setMemberError(''); }}
+                      onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); addMember(); } }}
+                      placeholder={language === 'es' ? 'Correo del miembro' : 'Member email'}
+                      className="flex-1 border border-slate-300 rounded-xl px-4 py-3 text-base min-h-[48px] transition-all duration-150 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={addMember}
+                      className="min-h-[48px] px-4 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl font-medium transition-all duration-150 active:scale-[0.97] focus-ring"
+                    >
+                      {language === 'es' ? 'Agregar' : 'Add'}
+                    </button>
+                  </div>
+                  {memberError && (
+                    <p className="mt-1.5 text-sm text-rose-600" role="alert">{memberError}</p>
+                  )}
+                </div>
+
+                {/* Already added members */}
+                {memberList.length > 0 && (
+                  <div className="space-y-2">
+                    {memberList.map(m => (
+                      <div key={m.email} className="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3">
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">
+                            {m.name.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="min-w-0">
+                            <span className="text-sm text-slate-900 font-medium block truncate">{m.name}</span>
+                            <span className="text-xs text-slate-400 block truncate">{m.email}</span>
+                          </div>
+                        </div>
+                        <button 
+                          onClick={() => removeMember(m.email)} 
+                          className="min-h-[44px] min-w-[44px] flex items-center justify-center text-rose-400 hover:text-rose-600 rounded-lg transition-colors duration-150 focus-ring flex-shrink-0"
+                          aria-label={`Remove ${m.name}`}
+                        >
+                          <X size={20} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Current user */}
+                <div className="flex items-center gap-3 text-sm text-slate-500 bg-slate-50 rounded-xl px-4 py-3">
+                  <div className="w-9 h-9 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-sm flex-shrink-0">
+                    {user?.name?.charAt(0)?.toUpperCase()}
+                  </div>
+                  <span className="text-slate-900 font-medium">{user?.name}</span>
+                  <span className="text-xs text-indigo-600 ml-auto">
+                    {language === 'es' ? '(tú — agregado automáticamente)' : '(you — added automatically)'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </PageTransition>
       <BottomNav />
     </div>
   );
 }
 
-// Group card with balance — uses its own query per group
+// Group card with balance
 function GroupCard({ group, icon, userId }) {
   const { language } = useTranslation();
 
@@ -362,19 +359,19 @@ function GroupCard({ group, icon, userId }) {
   return (
     <Link
       to={`/group/${group.id}`}
-      className="block bg-white rounded-xl shadow-sm border border-slate-200 p-5 hover:border-indigo-300 transition transform hover:scale-[1.02] active:scale-[0.98]"
+      className="block bg-white rounded-2xl shadow-sm border border-slate-200 p-5 md:p-6 hover:shadow-md hover:border-indigo-200 active:scale-[0.98] transition-all duration-200 ease-in-out"
     >
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center text-2xl flex-shrink-0">
-          <icon size={32} className="text-indigo-600" />
+      <div className="flex items-center gap-4">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-50 to-indigo-100 flex items-center justify-center flex-shrink-0">
+          {React.createElement(icon, { size: 24, className: "text-indigo-600", 'aria-hidden': true })}
         </div>
         <div className="flex-1 min-w-0">
-          <h4 className="font-medium text-slate-900 truncate">{group.name}</h4>
-          {group.description && <p className="text-sm text-slate-500 truncate">{group.description}</p>}
+          <h4 className="font-semibold text-slate-900 truncate leading-snug">{group.name}</h4>
+          {group.description && <p className="text-sm text-slate-500 truncate leading-relaxed">{group.description}</p>}
         </div>
         <div className="text-right flex-shrink-0">
           {Math.abs(balanceAmount) > 0.01 ? (
-            <span className={`font-bold text-lg ${balanceAmount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+            <span className={`font-bold text-base ${balanceAmount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
               {balanceAmount > 0 ? '+' : '-'}MX$ {Math.abs(balanceAmount).toFixed(2)}
             </span>
           ) : (
