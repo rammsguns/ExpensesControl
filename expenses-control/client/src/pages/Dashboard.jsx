@@ -133,7 +133,13 @@ export default function Dashboard() {
             <div className="grid grid-cols-2 gap-3 md:gap-4">
               {[
                 { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
-                { to: '/add-expense', icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => navigate('/add-expense') },
+                { to: '/add-expense', icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => {
+                  if (groups.length > 0) {
+                    navigate(`/add-expense/${groups[0].id}`);
+                  } else {
+                    toast.error(language === 'es' ? 'Crea un grupo primero' : 'Create a group first');
+                  }
+                } },
                 { icon: Plus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: typeof t === 'function' ? t('create_group') : 'Create Group', isButton: true, onClick: () => setShowCreate(true) },
                 { to: `/settle/${userBalance?.groupId || 'groups'}`, icon: Handshake, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Saldar' : 'Settle' },
               ].map((item, i) => {
