@@ -27,8 +27,8 @@ export default function AddExpense() {
 
   const [selectedGroupId, setSelectedGroupId] = React.useState(groupId || '');
 
-  // Get current group (from URL or selector)
-  const currentGroup = groupId ? group : groups.find(g => g.id.toString() === selectedGroupId.toString());
+  // Get current group based on selection
+  const currentGroup = groups.find(g => g.id.toString() === selectedGroupId.toString()) || group;
   const members = currentGroup?.members || [];
 
   const [description, setDescription] = React.useState('');
@@ -204,33 +204,26 @@ export default function AddExpense() {
             </div>
           )}
 
-          {/* Group Selector */}
+          {/* Group Selector - Always dropdown, pre-selected if coming from group */}
           <div>
             <label htmlFor="expense-group" className="block text-sm font-medium text-slate-700 mb-1">
               {language === 'es' ? 'Grupo' : 'Group'}
             </label>
-            {groupId ? (
-              <div className="w-full border border-slate-200 rounded-lg px-3 py-2.5 bg-slate-50 text-slate-700 flex items-center gap-2 min-h-[44px]">
-                <Users size={16} className="text-indigo-500" aria-hidden="true" />
-                <span className="font-medium">{currentGroup?.name || 'Loading...'}</span>
-              </div>
-            ) : (
-              <div className="relative">
-                <select
-                  id="expense-group"
-                  value={selectedGroupId}
-                  onChange={(e) => setSelectedGroupId(e.target.value)}
-                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
-                  required
-                >
-                  <option value="">{language === 'es' ? 'Selecciona un grupo...' : 'Select a group...'}</option>
-                  {groups.map(g => (
-                    <option key={g.id} value={g.id}>{g.name}</option>
-                  ))}
-                </select>
-                <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
-              </div>
-            )}
+            <div className="relative">
+              <select
+                id="expense-group"
+                value={selectedGroupId}
+                onChange={(e) => setSelectedGroupId(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
+                required
+              >
+                <option value="">{language === 'es' ? 'Selecciona un grupo...' : 'Select a group...'}</option>
+                {groups.map(g => (
+                  <option key={g.id} value={g.id}>{g.name}</option>
+                ))}
+              </select>
+              <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
+            </div>
           </div>
 
           {/* Show form fields only when group is selected */}
