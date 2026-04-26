@@ -1,24 +1,33 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { PlusCircle, Receipt, Search, Users, Home } from 'lucide-react';
+import { PlusCircle, Receipt, Search, Users } from 'lucide-react';
 import { useTranslation } from '../i18n';
 
 /**
- * Improved empty state component with large icons and CTAs.
+ * Reusable empty state component with clear icons, messages, and actionable CTAs.
+ * Follows Material Design 3 + Apple HIG guidelines for empty states.
  */
+
+const iconWrapperBase = "w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4";
+const containerBase = "bg-white rounded-2xl shadow-sm border border-slate-200 p-8 md:p-10 text-center";
+const headingBase = "text-base font-semibold text-slate-900 mb-2 leading-snug";
+const messageBase = "text-sm text-slate-500 mb-5 leading-relaxed";
+const actionBase = "inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-xl px-5 py-3 font-medium text-sm transition-all duration-150 ease-in-out active:scale-95 focus-ring";
+
 export function EmptyGroups({ onCreateGroup }) {
   const { t } = useTranslation();
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-10 text-center">
-      <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-        <Users size={40} className="text-indigo-600" />
+    <div className={containerBase} role="status" aria-live="polite">
+      <div className={`${iconWrapperBase} bg-indigo-50`}>
+        <Users size={32} className="text-indigo-600" aria-hidden="true" />
       </div>
-      <p className="text-slate-600 mb-4">{t('create_first_group')}</p>
+      <p className={headingBase}>{typeof t === 'function' ? t('create_first_group') : 'Create your first group'}</p>
+      <p className={messageBase}>Start organizing expenses with friends.</p>
       <button
         onClick={onCreateGroup}
-        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 font-medium text-sm transition active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none"
+        className={actionBase}
       >
-        <PlusCircle size={18} /> {t('create_group')}
+        <PlusCircle size={18} aria-hidden="true" /> {typeof t === 'function' ? t('create_group') : 'Create Group'}
       </button>
     </div>
   );
@@ -27,16 +36,17 @@ export function EmptyGroups({ onCreateGroup }) {
 export function EmptyExpenses({ groupId }) {
   const { t } = useTranslation();
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-10 text-center">
-      <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-        <Receipt size={40} className="text-indigo-600" />
+    <div className={containerBase} role="status" aria-live="polite">
+      <div className={`${iconWrapperBase} bg-indigo-50`}>
+        <Receipt size={32} className="text-indigo-600" aria-hidden="true" />
       </div>
-      <p className="text-slate-600 mb-4">{t('no_expenses')}</p>
+      <p className={headingBase}>{typeof t === 'function' ? t('no_expenses') : 'No expenses yet'}</p>
+      <p className={messageBase}>Add your first expense to start tracking.</p>
       <Link
         to={`/add-expense/${groupId}`}
-        className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 font-medium text-sm transition active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none"
+        className={actionBase}
       >
-        <PlusCircle size={18} /> {t('add_first_expense')}
+        <PlusCircle size={18} aria-hidden="true" /> {typeof t === 'function' ? t('add_first_expense') : 'Add Expense'}
       </Link>
     </div>
   );
@@ -45,52 +55,59 @@ export function EmptyExpenses({ groupId }) {
 export function EmptySearchResults() {
   const { t } = useTranslation();
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 text-center">
-      <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-        <Search size={40} className="text-indigo-600" />
+    <div className={containerBase} role="status" aria-live="polite">
+      <div className={`${iconWrapperBase} bg-slate-100`}>
+        <Search size={32} className="text-slate-500" aria-hidden="true" />
       </div>
-      <p className="text-slate-500">{t('no_search_results')}</p>
+      <p className={headingBase}>{typeof t === 'function' ? t('no_search_results') : 'No results found'}</p>
+      <p className={messageBase}>Try adjusting your search or filters.</p>
     </div>
   );
 }
 
 export function EmptyState({ type, groupId, onCreateGroup }) {
   const { t } = useTranslation();
-  
+
   const configs = {
     groups: {
       icon: Users,
-      message: t('create_first_group'),
-      actionLabel: t('create_group'),
+      wrapperBg: 'bg-indigo-50',
+      iconColor: 'text-indigo-600',
+      message: typeof t === 'function' ? t('create_first_group') : 'Create your first group',
+      actionLabel: typeof t === 'function' ? t('create_group') : 'Create Group',
       onAction: onCreateGroup,
     },
     expenses: {
       icon: Receipt,
-      message: t('no_expenses'),
-      actionLabel: t('add_first_expense'),
+      wrapperBg: 'bg-indigo-50',
+      iconColor: 'text-indigo-600',
+      message: typeof t === 'function' ? t('no_expenses') : 'No expenses yet',
+      actionLabel: typeof t === 'function' ? t('add_first_expense') : 'Add Expense',
       onAction: groupId ? () => window.location.href = `/add-expense/${groupId}` : null,
     },
     search: {
       icon: Search,
-      message: t('no_search_results'),
+      wrapperBg: 'bg-slate-100',
+      iconColor: 'text-slate-500',
+      message: typeof t === 'function' ? t('no_search_results') : 'No results found',
     },
   };
-  
+
   const config = configs[type] || configs.search;
   const Icon = config.icon;
-  
+
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-10 text-center">
-      <div className="w-20 h-20 rounded-full bg-indigo-100 flex items-center justify-center mx-auto mb-4">
-        <Icon size={40} className="text-indigo-600" />
+    <div className={containerBase} role="status" aria-live="polite">
+      <div className={`${iconWrapperBase} ${config.wrapperBg}`}>
+        <Icon size={32} className={config.iconColor} aria-hidden="true" />
       </div>
-      <p className="text-slate-600 mb-4">{config.message}</p>
+      <p className={headingBase}>{config.message}</p>
       {config.onAction && config.actionLabel && (
         <button
           onClick={config.onAction}
-          className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-5 py-2.5 font-medium text-sm transition active:scale-95 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 outline-none"
+          className={actionBase}
         >
-          <PlusCircle size={18} /> {config.actionLabel}
+          <PlusCircle size={18} aria-hidden="true" /> {config.actionLabel}
         </button>
       )}
     </div>

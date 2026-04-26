@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 /**
  * PageTransition wraps page content with a subtle fade-in on route changes.
+ * Duration: 200ms ease-out for smooth, unobtrusive transitions.
  */
 export default function PageTransition({ children }) {
   const location = useLocation();
@@ -16,8 +17,11 @@ export default function PageTransition({ children }) {
 
   return (
     <div
-      className="transition-all duration-200 ease-out"
-      style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(4px)' }}
+      className="transition-all duration-200 ease-out will-change-transform"
+      style={{ 
+        opacity: visible ? 1 : 0, 
+        transform: visible ? 'translateY(0)' : 'translateY(4px)',
+      }}
     >
       {children}
     </div>

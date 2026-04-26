@@ -19,7 +19,20 @@ export default {
           800: '#065f46',
           900: '#064e3b',
         }
-      }
+      },
+      spacing: {
+        '18': '4.5rem',
+        '22': '5.5rem',
+      },
+      minHeight: {
+        '11': '2.75rem',
+        '12': '3rem',
+      },
+      transitionDuration: {
+        '150': '150ms',
+        '200': '200ms',
+        '300': '300ms',
+      },
     },
   },
   plugins: [],

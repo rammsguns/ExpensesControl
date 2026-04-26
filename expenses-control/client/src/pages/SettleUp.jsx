@@ -76,7 +76,7 @@ export default function SettleUp() {
       <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold">
+          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold touch-target min-h-[44px] min-w-[44px]" aria-label="Go back">
             <ArrowLeft size={24} /> {t('dashboard')}
           </button>
           <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl" title="Home">

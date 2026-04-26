@@ -273,7 +273,7 @@ export default function Dashboard() {
                     placeholder={language === 'es' ? 'correo@ejemplo.com' : 'email@example.com'}
                     className="flex-1 border rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none text-base"
                   />
-                  <button type="button" onClick={addMember} className="bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium text-sm flex-shrink-0">
+                  <button type="button" onClick={addMember} aria-label="Add member" className="bg-indigo-600 touch-target min-h-[44px] min-w-[44px] hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium text-sm flex-shrink-0">
                     <Plus size={20} />
                   </button>
                 </div>
@@ -319,7 +319,7 @@ export default function Dashboard() {
                         <span className="text-sm text-slate-900">{m.name}</span>
                         <span className="text-xs text-slate-400">{m.email}</span>
                       </div>
-                      <button onClick={() => removeMember(m.email)} className="text-rose-400 hover:text-rose-600 text-lg">
+                      <button onClick={() => removeMember(m.email)} aria-label="Remove member" className="text-rose-400 touch-target min-h-[44px] min-w-[44px] hover:text-rose-600 text-lg">
                         <MoreHorizontal size={20} />
                       </button>
                     </div>

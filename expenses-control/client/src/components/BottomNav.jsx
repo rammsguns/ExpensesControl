@@ -24,12 +24,16 @@ export default function BottomNav() {
             <button
               key={tab.path}
               onClick={() => navigate(tab.path)}
-              className={`flex-1 flex flex-col items-center py-3 transition ${
-                isActive ? 'text-indigo-600' : 'text-slate-400 hover:text-slate-600'
+              className={`flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] transition-colors duration-150 ease-in-out rounded-lg mx-0.5 my-1 ${
+                isActive 
+                  ? 'text-indigo-600 bg-indigo-50/60' 
+                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50/60'
               }`}
+              aria-label={language === 'es' ? tab.labelEs : tab.labelEn}
+              aria-current={isActive ? 'page' : undefined}
             >
-              <tab.icon size={24} className="mb-1" />
-              <span className="text-xs font-medium">
+              <tab.icon size={24} className="mb-0.5" strokeWidth={isActive ? 2.5 : 2} />
+              <span className={`text-[11px] font-medium leading-tight ${isActive ? 'text-indigo-600' : ''}`}>
                 {language === 'es' ? tab.labelEs : tab.labelEn}
               </span>
             </button>
