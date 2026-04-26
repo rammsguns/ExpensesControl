@@ -134,7 +134,7 @@ export default function Dashboard() {
               {[
                 { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
                 { to: '/add-expense', icon: PlusCircle, bg: 'bg-emerald-50', text: 'text-emerald-600', label: language === 'es' ? 'Gasto' : 'Expense', isButton: true, onClick: () => {
-                  if (groups.length > 0) {
+                  if (groups && groups.length > 0 && groups[0]?.id) {
                     navigate(`/add-expense/${groups[0].id}`);
                   } else {
                     toast.error(language === 'es' ? 'Crea un grupo primero' : 'Create a group first');
