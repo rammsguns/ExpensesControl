@@ -7,7 +7,7 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
-import { SkeletonCard } from '../components/SkeletonLoaders';
+import { SkeletonGroupGrid } from '../components/SkeletonLoaders';
 import { EmptyState } from '../components/EmptyStates';
 import { Search, PlusCircle, Users, Handshake, Home, Plus, Plane, Heart, MoreHorizontal } from 'lucide-react';
 import { toast } from 'react-hot-toast';
@@ -172,7 +172,7 @@ export default function Dashboard() {
 
           {groupsLoading ? (
             <div className="max-w-lg mx-auto px-4 py-6">
-              <SkeletonLoaders type="groupCard" count={3} />
+              <SkeletonGroupGrid count={3} />
             </div>
           ) : groups.length === 0 ? (
           <EmptyState type="groups" onAction={() => setShowCreate(true)} />
