@@ -143,19 +143,24 @@ export default function Dashboard() {
                 { icon: Plus, bg: 'bg-indigo-50', text: 'text-indigo-600', label: typeof t === 'function' ? t('create_group') : 'Create Group', isButton: true, onClick: () => setShowCreate(true) },
                 { to: `/settle/${userBalance?.groupId || 'groups'}`, icon: Handshake, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Saldar' : 'Settle' },
               ].map((item, i) => {
-                const content = (
-                  <>
+                const classes = "flex bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out h-[120px] w-full";
+                return (
+                  <Link
+                    key={i}
+                    to={item.to || '#'}
+                    className={classes}
+                    onClick={(e) => {
+                      if (item.onClick) {
+                        e.preventDefault();
+                        item.onClick();
+                      }
+                    }}
+                  >
                     <div className={`w-12 h-12 rounded-xl ${item.bg} flex items-center justify-center`}>
                       <item.icon size={24} className={item.text} aria-hidden="true" />
                     </div>
                     <span className="text-slate-700 font-medium text-sm leading-snug text-center w-full">{item.label}</span>
-                  </>
-                );
-                const classes = "bg-white rounded-2xl shadow-sm border border-slate-200 p-4 md:p-5 flex flex-col items-center justify-center gap-2 hover:shadow-md hover:border-indigo-200 active:scale-[0.97] transition-all duration-200 ease-in-out h-[120px] w-full";
-                return item.isButton ? (
-                  <div key={i} className={classes} onClick={item.onClick} role="button" tabIndex={0}>{content}</div>
-                ) : (
-                  <Link key={i} to={item.to} className={classes}>{content}</Link>
+                  </Link>
                 );
               })}
             </div>
