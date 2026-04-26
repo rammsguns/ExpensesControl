@@ -54,6 +54,7 @@ function App() {
         <Route path="/2fa-setup" element={<ProtectedRoute><TwoFASetup /></ProtectedRoute>} />
         
         <Route path="/group/:id" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
+        <Route path="/add-expense" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
         <Route path="/add-expense/:groupId" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
         <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
         <Route path="/settle/:groupId" element={<ProtectedRoute><SettleUp /></ProtectedRoute>} />
