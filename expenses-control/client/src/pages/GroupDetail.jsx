@@ -195,10 +195,10 @@ export default function GroupDetail() {
             </button>
             <Link
               to={`/add-expense/${id}`}
-              className="min-h-[48px] bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring"
+              className="min-h-[48px] bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-600 rounded-xl px-5 py-3 text-sm font-medium whitespace-nowrap transition-all duration-150 flex items-center gap-2 flex-shrink-0 focus-ring shadow-sm"
             >
               <Receipt size={18} aria-hidden="true" />
-              {language === 'es' ? 'Gasto' : 'Expense'}
+              {language === 'es' ? 'Agregar Gasto' : 'Add Expense'}
             </Link>
           </div>
 
@@ -277,10 +277,11 @@ export default function GroupDetail() {
         <div className="fixed right-4 bottom-28 flex flex-col gap-3 z-30">
           <Link
             to={`/add-expense/${id}`}
-            className="w-14 h-14 min-h-[56px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-full shadow-lg flex items-center justify-center active:scale-95 transition-all duration-150 focus-ring"
+            className="min-h-[56px] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-full shadow-lg flex items-center gap-2 px-5 py-3 active:scale-95 transition-all duration-150 focus-ring"
             aria-label={language === 'es' ? 'Agregar gasto' : 'Add expense'}
           >
-            <Plus size={28} aria-hidden="true" />
+            <Plus size={24} aria-hidden="true" />
+            <span className="font-medium text-sm">{language === 'es' ? 'Agregar' : 'Add'}</span>
           </Link>
         </div>
 
