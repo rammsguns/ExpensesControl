@@ -313,6 +313,37 @@ export default function Dashboard() {
                   {memberError && (
                     <p className="mt-1.5 text-sm text-rose-600" role="alert">{memberError}</p>
                   )}
+
+                  {/* Suggested Members */}
+                  {existingFriends.length > 0 && (
+                    <div className="mt-3">
+                      <p className="text-xs font-medium text-slate-500 mb-2">
+                        {language === 'es' ? 'Sugerencias' : 'Suggestions'}
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {existingFriends
+                          .filter(f => !memberList.some(m => m.email === f.email) && f.email !== user?.email)
+                          .slice(0, 8)
+                          .map(friend => (
+                            <button
+                              key={friend.email}
+                              type="button"
+                              onClick={() => {
+                                setMemberList(prev => [...prev, { name: friend.name, email: friend.email }]);
+                                setMemberError('');
+                              }}
+                              className="flex items-center gap-2 bg-slate-100 hover:bg-indigo-50 hover:border-indigo-300 border border-slate-200 rounded-full pl-1 pr-3 py-1 transition-all duration-150 active:scale-95 focus-ring"
+                            >
+                              <div className="w-7 h-7 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-700 font-bold text-xs">
+                                {friend.name.charAt(0).toUpperCase()}
+                              </div>
+                              <span className="text-sm font-medium text-slate-700">{friend.name}</span>
+                              <Plus size={14} className="text-indigo-500" />
+                            </button>
+                          ))}
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Already added members */}
