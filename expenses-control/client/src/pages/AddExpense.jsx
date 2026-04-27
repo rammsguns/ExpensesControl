@@ -27,8 +27,15 @@ export default function AddExpense() {
 
   const [selectedGroupId, setSelectedGroupId] = React.useState(groupId || '');
 
+  // Fetch full details for the selected group (members needed for Paid By dropdown)
+  const { data: selectedGroup } = useQuery({
+    queryKey: ['group', selectedGroupId],
+    queryFn: () => api.get(`/groups/${selectedGroupId}`).then(r => r.data),
+    enabled: !!selectedGroupId,
+  });
+
   // Get current group based on selection
-  const currentGroup = groups.find(g => g.id.toString() === selectedGroupId.toString()) || group;
+  const currentGroup = selectedGroup || group;
   const members = currentGroup?.members || [];
 
   const [description, setDescription] = React.useState('');
