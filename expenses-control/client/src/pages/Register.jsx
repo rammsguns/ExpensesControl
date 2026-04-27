@@ -7,16 +7,32 @@ import { toast } from 'react-hot-toast';
 import { Eye, EyeOff, Check, X } from 'lucide-react';
 
 export default function Register() {
-  const { t } = useTranslation();
+  const { t, language } = useTranslation();
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [currency, setCurrency] = React.useState(language === 'es' ? 'MXN' : 'USD');
   const [loading, setLoading] = React.useState(false);
   const [showPassword, setShowPassword] = React.useState(false);
   const [error, setError] = React.useState('');
   const [fieldErrors, setFieldErrors] = React.useState({});
   const [touched, setTouched] = React.useState({});
+
+  const currencies = [
+    { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
+    { code: 'MXN', name: 'Mexican Peso', flag: '🇲🇽' },
+    { code: 'EUR', name: 'Euro', flag: '🇪🇺' },
+    { code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
+    { code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
+    { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
+    { code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' },
+    { code: 'BRL', name: 'Brazilian Real', flag: '🇧🇷' },
+    { code: 'ARS', name: 'Argentine Peso', flag: '🇦🇷' },
+    { code: 'COP', name: 'Colombian Peso', flag: '🇨🇴' },
+    { code: 'CLP', name: 'Chilean Peso', flag: '🇨🇱' },
+    { code: 'PEN', name: 'Peruvian Sol', flag: '🇵🇪' },
+  ];
 
   // Password strength requirements
   const requirements = [
@@ -93,7 +109,7 @@ export default function Register() {
 
     setLoading(true);
     try {
-      await api.post('/auth/register', { name, email, password });
+      await api.post('/auth/register', { name, email, password, currency, language });
       const { data } = await api.post('/auth/login', { email, password });
       localStorage.setItem('token', data.token);
       localStorage.setItem('user', JSON.stringify(data.user));
@@ -249,6 +265,33 @@ export default function Register() {
               {touched.confirmPassword && fieldErrors.confirmPassword && (
                 <p id="confirm-error" className="mt-1.5 text-sm text-rose-600" role="alert">{fieldErrors.confirmPassword}</p>
               )}
+            </div>
+
+            {/* Currency Selector */}
+            <div>
+              <label htmlFor="reg-currency" className="block text-sm font-medium text-slate-700 mb-1.5">
+                {language === 'es' ? 'Moneda' : 'Currency'}
+              </label>
+              <select
+                id="reg-currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className={inputClass('currency')}
+                required
+                aria-label={language === 'es' ? 'Seleccionar moneda' : 'Select currency'}
+              >
+                {currencies.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.code} — {c.name}
+                  </option>
+                ))}
+              </select>
+              <p className="text-xs text-slate-400 mt-1">
+                {language === 'es' 
+                  ? 'Predeterminado según tu idioma'
+                  : 'Default based on your language'
+                }
+              </p>
             </div>
 
             <button

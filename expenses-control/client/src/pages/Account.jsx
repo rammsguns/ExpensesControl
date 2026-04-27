@@ -165,7 +165,7 @@ export default function Account() {
             <span className="text-slate-700 text-sm font-medium">
               {language === 'es' ? 'Moneda' : 'Currency'}
             </span>
-            <span className="text-slate-500 text-sm">MXN</span>
+            <span className="text-slate-500 text-sm">{user?.currency || 'USD'}</span>
           </div>
         </div>
 

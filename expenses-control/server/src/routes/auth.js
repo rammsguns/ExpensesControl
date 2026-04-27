@@ -52,11 +52,10 @@ const authLimiter = rateLimit({
 });
 
 router.post('/register', authLimiter, async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password, currency, language } = req.body;
   if (!name || !email || !password) {
     return res.status(400).json({ error: 'Missing fields' });
   }
-  // Password strength validation
   // Password strength validation
   const errors = [];
   if (password.length < 10) errors.push('at least 10 characters');
@@ -70,11 +69,27 @@ router.post('/register', authLimiter, async (req, res) => {
     });
   }
   try {
+    // Default currency based on language or explicit choice
+    const defaultCurrency = currency || (language === 'es' ? 'MXN' : 'USD');
     const hashedPassword = await bcrypt.hash(password, 12);
-    const [userId] = await db('users').insert({ name, email, password: hashedPassword });
+    const [userId] = await db('users').insert({
+      name,
+      email,
+      password: hashedPassword,
+      currency: defaultCurrency
+    });
     const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.status(201).json({ user: { id: userId, name, email, is_premium: false, monthly_expense_limit: 100 } });
+    res.status(201).json({
+      user: {
+        id: userId,
+        name,
+        email,
+        is_premium: false,
+        monthly_expense_limit: 100,
+        currency: defaultCurrency
+      }
+    });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT') {
       return res.status(409).json({ error: 'Email already registered' });
@@ -103,7 +118,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit, currency: user.currency } });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -132,7 +147,7 @@ router.post('/2fa/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit, currency: user.currency } });
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid or expired token' });
@@ -263,7 +278,8 @@ router.get('/me', async (req, res) => {
       email: user.email,
       is_premium: user.is_premium,
       monthly_expense_limit: user.monthly_expense_limit,
-      monthly_expense_count: parseInt(expenseCount?.count || 0, 10)
+      monthly_expense_count: parseInt(expenseCount?.count || 0, 10),
+      currency: user.currency
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
