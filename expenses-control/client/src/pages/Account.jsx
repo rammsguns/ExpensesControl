@@ -3,11 +3,14 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
-import { LogOut, Crown, Zap, Infinity } from 'lucide-react';
+import { LogOut, Crown, Zap, Infinity, CheckCircle } from 'lucide-react';
+import api from '../api';
+import { toast } from 'react-hot-toast';
 
 export default function Account() {
   const { t, language } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
+  const [upgrading, setUpgrading] = React.useState(false);
 
   React.useEffect(() => {
     refreshUser();
@@ -16,6 +19,26 @@ export default function Account() {
   const isPremium = user?.is_premium;
   const limit = user?.monthly_expense_limit || 100;
   const used = user?.monthly_expense_count || 0;
+
+  const handleUpgrade = async () => {
+    if (!window.confirm(language === 'es' 
+      ? '¿Activar Premium por $3/mes? (Simulado - sin pago real)'
+      : 'Activate Premium for $3/month? (Simulated - no real payment)'
+    )) return;
+
+    setUpgrading(true);
+    try {
+      const response = await api.post('/auth/upgrade');
+      if (response.data.is_premium) {
+        toast.success(language === 'es' ? '¡Premium activado!' : 'Premium activated!');
+        await refreshUser();
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Upgrade failed');
+    } finally {
+      setUpgrading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
@@ -71,8 +94,24 @@ export default function Account() {
                 </div>
               </div>
               
+              {/* Benefits list */}
+              <div className="mt-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <span>{language === 'es' ? 'Gastos ilimitados' : 'Unlimited expenses'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <span>{language === 'es' ? 'Soporte prioritario' : 'Priority support'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <span>{language === 'es' ? 'Sin anuncios' : 'No ads'}</span>
+                </div>
+              </div>
+
               {/* Usage bar */}
-              <div className="mt-3">
+              <div className="mt-4">
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-slate-600">{t('monthly_limit')}</span>
                   <span className="text-slate-500">{used} / {limit}</span>
@@ -91,14 +130,23 @@ export default function Account() {
                 </p>
               </div>
               
-              {/* Upgrade button (placeholder - no payment integration yet) */}
+              {/* Upgrade button */}
               <button
-                disabled
-                className="mt-4 w-full bg-indigo-600 text-white rounded-lg px-4 py-2.5 font-medium text-sm opacity-50 cursor-not-allowed"
-                title="Payment integration coming soon"
+                onClick={handleUpgrade}
+                disabled={upgrading}
+                className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg px-4 py-2.5 font-medium text-sm transition focus-ring disabled:opacity-50"
               >
-                {t('upgrade_to_premium')}
+                {upgrading 
+                  ? (language === 'es' ? 'Activando...' : 'Activating...')
+                  : (language === 'es' ? 'Activar Premium — $3/mes' : 'Activate Premium — $3/month')
+                }
               </button>
+              <p className="text-xs text-slate-400 text-center mt-2">
+                {language === 'es' 
+                  ? 'Pago simulado — sin procesamiento real'
+                  : 'Simulated payment — no real processing'
+                }
+              </p>
             </div>
           )}
         </div>

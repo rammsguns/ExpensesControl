@@ -270,4 +270,34 @@ router.get('/me', async (req, res) => {
   }
 });
 
+// Simulate premium upgrade (no real payment processing)
+router.post('/upgrade', async (req, res) => {
+  try {
+    const user = await db('users').where({ id: req.user.id }).first();
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (user.is_premium) {
+      return res.status(400).json({ error: 'User is already premium' });
+    }
+
+    // In production, this would integrate with Stripe/PayPal
+    // For now, simulate successful payment
+    await db('users').where({ id: req.user.id }).update({
+      is_premium: true,
+      monthly_expense_limit: null // unlimited
+    });
+
+    res.json({
+      message: 'Premium activated successfully',
+      is_premium: true,
+      monthly_expense_limit: null
+    });
+  } catch (err) {
+    console.error('Upgrade error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;
