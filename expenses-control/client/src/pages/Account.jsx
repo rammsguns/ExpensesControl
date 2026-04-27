@@ -3,7 +3,7 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
-import { User, Globe, CreditCard, LogOut, Shield } from 'lucide-react';
+import { LogOut } from 'lucide-react';
 
 export default function Account() {
   const { t, language } = useTranslation();
@@ -54,13 +54,6 @@ export default function Account() {
           </button>
         </div>
 
-        {/* About */}
-        <div className="mt-8 text-center text-xs text-slate-400">
-          <p>ExpensesControl MVP v0.1.0</p>
-          <p className="mt-1 flex items-center justify-center gap-2">
-            Hecho con <Shield size={12} className="text-indigo-600" />
-          </p>
-        </div>
       </div>
       <BottomNav />
     </div>
