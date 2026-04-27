@@ -237,4 +237,37 @@ router.get('/2fa/status', async (req, res) => {
   }
 });
 
+// Get user profile with monthly expense count
+router.get('/me', async (req, res) => {
+  try {
+    const user = await db('users').where({ id: req.user.id }).first();
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Count expenses this month
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const expenseCount = await db('expenses')
+      .where({ paid_by: req.user.id })
+      .where('created_at', '>=', startOfMonth.toISOString())
+      .where('created_at', '<', endOfMonth.toISOString())
+      .count('id as count')
+      .first();
+
+    res.json({
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      is_premium: user.is_premium,
+      monthly_expense_limit: user.monthly_expense_limit,
+      monthly_expense_count: parseInt(expenseCount?.count || 0, 10)
+    });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 module.exports = router;

@@ -93,5 +93,13 @@
   "accessibility_settings": "Accessibility settings",
   "toggle_high_contrast": "Toggle high contrast mode",
   "toggle_large_text": "Toggle large text mode",
-  "toggle_reduced_motion": "Toggle reduced motion mode"
+  "toggle_reduced_motion": "Toggle reduced motion mode",
+  "premium": "Premium",
+  "upgrade_to_premium": "Upgrade to Premium",
+  "premium_benefits": "Unlimited expenses, priority support",
+  "monthly_limit": "Monthly Limit",
+  "expenses_used": "{{used}} of {{limit}} expenses used",
+  "unlimited": "Unlimited",
+  "premium_active": "Premium Active",
+  "premium_desc": "You have unlimited expenses"
 }
