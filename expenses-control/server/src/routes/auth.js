@@ -74,7 +74,7 @@ router.post('/register', authLimiter, async (req, res) => {
     const [userId] = await db('users').insert({ name, email, password: hashedPassword });
     const token = jwt.sign({ id: userId }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.status(201).json({ user: { id: userId, name, email } });
+    res.status(201).json({ user: { id: userId, name, email, is_premium: false, monthly_expense_limit: 100 } });
   } catch (err) {
     if (err.code === 'SQLITE_CONSTRAINT') {
       return res.status(409).json({ error: 'Email already registered' });
@@ -103,7 +103,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit } });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -132,7 +132,7 @@ router.post('/2fa/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit } });
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid or expired token' });

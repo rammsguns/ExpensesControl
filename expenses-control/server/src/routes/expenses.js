@@ -84,6 +84,40 @@ router.post('/', auth, requireGroupMember, async (req, res) => {
       return res.status(400).json({ error: 'Amount must be positive' });
     }
 
+    // Check monthly expense limit
+    const user = await db('users').where({ id: req.user.id }).first();
+    if (!user) {
+      return res.status(403).json({ error: 'User not found' });
+    }
+
+    // Premium users skip the limit
+    if (!user.is_premium) {
+      const limit = user.monthly_expense_limit || 100;
+
+      // Count expenses created this month by this user
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+      const expenseCount = await db('expenses')
+        .where({ paid_by: req.user.id })
+        .where('created_at', '>=', startOfMonth.toISOString())
+        .where('created_at', '<', endOfMonth.toISOString())
+        .count('id as count')
+        .first();
+
+      const currentCount = parseInt(expenseCount?.count || 0, 10);
+
+      if (currentCount >= limit) {
+        return res.status(403).json({
+          error: 'Monthly expense limit reached',
+          limit,
+          current: currentCount,
+          message: 'You have reached your monthly limit of ' + limit + ' expenses. Upgrade to premium for unlimited expenses.'
+        });
+      }
+    }
+
     // Verify user is a member of the group
     const membership = await db('group_members')
       .where({ group_id: groupId, user_id: req.user.id })
