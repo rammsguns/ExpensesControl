@@ -9,6 +9,7 @@ import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
 import { SkeletonGroupGrid } from '../components/SkeletonLoaders';
 import { EmptyState } from '../components/EmptyStates';
+import { hapticMedium, hapticSuccess, hapticError, hapticLight } from '../utils/haptics';
 import { Search, PlusCircle, Users, Handshake, Home, Plus, Plane, Heart, MoreHorizontal, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -83,6 +84,7 @@ export default function Dashboard() {
     setCreating(true);
     try {
       const res = await api.post('/groups', { name: groupName, description: groupDesc, type: groupType });
+      hapticSuccess();
       const groupId = res.data.id;
       for (const member of memberList) {
         try { await api.post(`/groups/${groupId}/members`, { email: member.email }); } catch {}
@@ -128,6 +130,7 @@ export default function Dashboard() {
                   label: language === 'es' ? 'Gasto' : 'Expense',
                   isButton: true,
                   onClick: () => {
+                    hapticMedium();
                     if (groups && groups.length > 0 && groups[0]?.id) {
                       navigate(`/add-expense/${groups[0].id}`);
                     } else {
@@ -136,7 +139,7 @@ export default function Dashboard() {
                   }
                 },
                 { to: '/search', icon: Search, bg: 'bg-indigo-50', text: 'text-indigo-600', label: language === 'es' ? 'Buscar' : 'Search' },
-                { icon: Plus, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Grupo' : 'Group', isButton: true, onClick: () => setShowCreate(true) },
+                { icon: Plus, bg: 'bg-violet-50', text: 'text-violet-600', label: language === 'es' ? 'Grupo' : 'Group', isButton: true, onClick: () => { hapticMedium(); setShowCreate(true); } },
                 { to: `/settle/${userBalance?.groupId || 'groups'}`, icon: Handshake, bg: 'bg-amber-50', text: 'text-amber-600', label: language === 'es' ? 'Saldar' : 'Settle' },
               ].map((item, i) => (
                 <Link
@@ -200,7 +203,10 @@ export default function Dashboard() {
 
         {/* FAB - Create Group */}
         <button
-          onClick={() => setShowCreate(true)}
+          onClick={() => {
+            hapticMedium();
+            setShowCreate(true);
+          }}
           className="fixed right-4 bottom-28 w-14 h-14 min-h-[56px] bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white rounded-full shadow-lg flex items-center justify-center z-30 transition-all duration-150 ease-in-out active:scale-95 focus-ring"
           aria-label={typeof t === 'function' ? t('create_group') : 'Create group'}
         >

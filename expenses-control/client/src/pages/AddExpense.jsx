@@ -7,6 +7,7 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
 import { toast } from 'react-hot-toast';
+import { hapticMedium, hapticSuccess, hapticError, hapticLight } from '../utils/haptics';
 import { ArrowLeft, Home, Receipt, DollarSign, ChevronDown, Users } from 'lucide-react';
 
 export default function AddExpense() {
@@ -126,14 +127,17 @@ export default function AddExpense() {
     setTouched({ description: true, amount: true, splitType: true });
 
     if (!description.trim()) {
+      hapticError();
       setError(t('error_description_required'));
       return;
     }
     if (!amount || isNaN(parseFloat(amount)) || parseFloat(amount) <= 0) {
+      hapticError();
       setError(t('error_invalid_amount'));
       return;
     }
     if (!splitType) {
+      hapticError();
       setError(t('error_select_split_type'));
       return;
     }
@@ -142,6 +146,7 @@ export default function AddExpense() {
     if (splitType === 'exact') {
       const parsedAmount = parseFloat(amount);
       if (Math.abs(splitTotal - parsedAmount) > 0.01) {
+        hapticError();
         setError(`Split amounts must total {selectedCurrency}${parsedAmount.toFixed(2)}. Current total: {selectedCurrency}${splitTotal.toFixed(2)}`);
         return;
       }
@@ -154,12 +159,14 @@ export default function AddExpense() {
         return sum + (isNaN(val) ? 0 : val);
       }, 0);
       if (Math.abs(totalPct - 100) > 0.1) {
+        hapticError();
         setError(`Percentages must sum to 100%. Current total: ${totalPct.toFixed(1)}%`);
         return;
       }
     }
 
     setLoading(true);
+    hapticMedium();
 
     try {
       const payload = {
@@ -177,11 +184,13 @@ export default function AddExpense() {
         })),
       };
       await api.post('/expenses', payload);
+      hapticSuccess();
       toast.success(t('toast_expense_added'));
       const targetGroupId = groupId || selectedGroupId;
       qc.invalidateQueries({ queryKey: ['expenses', targetGroupId] });
       navigate(`/group/${targetGroupId}`);
     } catch (err) {
+      hapticError();
       setError(err.response?.data?.error || 'Failed to create expense');
       toast.error(t('toast_error_generic'));
     }
@@ -204,7 +213,10 @@ export default function AddExpense() {
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-2">
           <button
-            onClick={() => groupId ? navigate(`/group/${groupId}`) : navigate('/')}
+            onClick={() => {
+              hapticMedium();
+              groupId ? navigate(`/group/${groupId}`) : navigate('/');
+            }}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-500 hover:text-slate-700 text-2xl font-semibold focus-ring rounded-lg"
             aria-label={t('cancel')}
             title={t('cancel')}
@@ -212,7 +224,10 @@ export default function AddExpense() {
             <ArrowLeft size={24} />
           </button>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => {
+              hapticMedium();
+              navigate('/');
+            }}
             className="min-h-[44px] min-w-[44px] flex items-center justify-center text-slate-400 hover:text-slate-600 text-2xl focus-ring rounded-lg"
             aria-label="Home"
             title="Home"
@@ -240,7 +255,10 @@ export default function AddExpense() {
               <select
                 id="expense-group"
                 value={selectedGroupId}
-                onChange={(e) => setSelectedGroupId(e.target.value)}
+                onChange={(e) => {
+                hapticLight();
+                setSelectedGroupId(e.target.value);
+              }}
                 className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
                 required
               >
@@ -262,7 +280,10 @@ export default function AddExpense() {
               <select
                 id="expense-currency"
                 value={selectedCurrency}
-                onChange={(e) => setSelectedCurrency(e.target.value)}
+                onChange={(e) => {
+                hapticLight();
+                setSelectedCurrency(e.target.value);
+              }}
                 className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
               >
                 {currencies.map(c => (

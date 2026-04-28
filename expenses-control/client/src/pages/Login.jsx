@@ -2,21 +2,24 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
+import { useBiometric } from '../hooks/useBiometric';
 import api from '../api';
 import PageTransition from '../components/PageTransition';
 import { toast } from 'react-hot-toast';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Fingerprint } from 'lucide-react';
 
 export default function Login() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { login } = useAuth();
+  const { isSupported, authenticate } = useBiometric();
 
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [showPassword, setShowPassword] = React.useState(false);
   const [error, setError] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [bioLoading, setBioLoading] = React.useState(false);
   const [fieldErrors, setFieldErrors] = React.useState({});
 
   const validate = () => {
@@ -49,6 +52,31 @@ export default function Login() {
       toast.error(typeof t === 'function' ? t('toast_login_error') : 'Login failed');
     }
     setLoading(false);
+  };
+
+  const handleBiometricLogin = async () => {
+    if (!email.trim()) {
+      setFieldErrors({ email: typeof t === 'function' ? t('email_required') || 'Email is required' : 'Email is required' });
+      return;
+    }
+    setBioLoading(true);
+    setError('');
+    try {
+      const result = await authenticate(email);
+      if (result.success) {
+        localStorage.setItem('user', JSON.stringify(result.user));
+        toast.success(typeof t === 'function' ? t('toast_login_success') : 'Welcome back!');
+        window.location.href = '/';
+      } else {
+        setError(result.error || 'Biometric authentication failed');
+        toast.error(result.error || 'Biometric authentication failed');
+      }
+    } catch (err) {
+      const msg = err.response?.data?.error || 'Biometric authentication failed';
+      setError(msg);
+      toast.error(msg);
+    }
+    setBioLoading(false);
   };
 
   return (
@@ -136,6 +164,21 @@ export default function Login() {
                 typeof t === 'function' ? t('login') : 'Log In'
               )}
             </button>
+
+            {isSupported && (
+              <button
+                type="button"
+                onClick={handleBiometricLogin}
+                disabled={bioLoading}
+                className="w-full min-h-[48px] bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white rounded-xl px-4 py-3 font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-150 ease-in-out active:scale-[0.98] focus-ring flex items-center justify-center gap-2"
+              >
+                <Fingerprint size={20} />
+                {bioLoading
+                  ? (typeof t === 'function' ? t('biometric_authenticating') || 'Authenticating...' : 'Authenticating...')
+                  : (typeof t === 'function' ? t('biometric_login') || 'Sign in with Biometrics' : 'Sign in with Biometrics')
+                }
+              </button>
+            )}
           </form>
 
           <p className="text-center text-sm text-slate-500 mt-6 leading-relaxed">

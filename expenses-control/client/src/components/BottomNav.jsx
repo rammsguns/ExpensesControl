@@ -1,6 +1,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from '../i18n';
+import { hapticMedium } from '../utils/haptics';
 import { Home, Users, Clock, User } from 'lucide-react';
 
 const tabs = [
@@ -23,7 +24,10 @@ export default function BottomNav() {
           return (
             <button
               key={tab.path}
-              onClick={() => navigate(tab.path)}
+              onClick={() => {
+                hapticMedium();
+                navigate(tab.path);
+              }}
               className={`flex-1 flex flex-col items-center justify-center py-2 min-h-[56px] transition-colors duration-150 ease-in-out rounded-lg mx-0.5 my-1 ${
                 isActive 
                   ? 'text-indigo-600 bg-indigo-50/60' 

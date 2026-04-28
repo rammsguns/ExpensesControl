@@ -7,6 +7,12 @@ const { authenticator } = require('otplib');
 const QRCode = require('qrcode');
 const crypto = require('crypto');
 const db = require('../db');
+const {
+  generateRegistrationOptions,
+  verifyRegistrationResponse,
+  generateAuthenticationOptions,
+  verifyAuthenticationResponse,
+} = require('@simplewebauthn/server');
 
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;
 const ALGORITHM = 'aes-256-gcm';
@@ -162,9 +168,232 @@ router.post('/logout', async (req, res) => {
   res.json({ message: 'Logged out' });
 });
 
+// ── WebAuthn (Biometric Authentication) ────────────────────────────
+
+// RP configuration
+const RP_NAME = 'ExpensesControl';
+const RP_ID = process.env.WEBAUTHN_RP_ID || (process.env.NODE_ENV === 'production' ? 'expensescontrol.app' : 'localhost');
+const ORIGIN = process.env.WEBAUTHN_ORIGIN || (process.env.NODE_ENV === 'production' ? 'https://expensescontrol.app' : 'http://localhost:5176');
+
+// GET /auth/webauthn/register-options — requires auth (user already logged in)
+router.get('/webauthn/register-options', async (req, res) => {
+  try {
+    const token = req.cookies?.token || (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null);
+    if (!token) return res.status(401).json({ error: 'Unauthorized' });
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await db('users').where({ id: payload.id }).first();
+    if (!user) return res.status(401).json({ error: 'User not found' });
+
+    const existingCreds = await db('webauthn_credentials').where({ user_id: user.id });
+
+    const options = await generateRegistrationOptions({
+      rpName: RP_NAME,
+      rpID: RP_ID,
+      userID: String(user.id),
+      userName: user.email,
+      userDisplayName: user.name,
+      attestationType: 'none',
+      excludeCredentials: existingCreds.map(c => ({
+        id: Buffer.from(c.id, 'base64url'),
+        transports: JSON.parse(c.transports || '[]'),
+      })),
+    });
+
+    // Store challenge temporarily in user record (or in-memory; using a simple cache here)
+    // We'll use a signed cookie for the challenge
+    const challengeToken = jwt.sign(
+      { challenge: options.challenge, userId: user.id, type: 'webauthn-register' },
+      process.env.JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+    res.cookie('webauthn_challenge', challengeToken, { httpOnly: true, sameSite: 'strict', maxAge: 5 * 60 * 1000 });
+
+    res.json(options);
+  } catch (err) {
+    console.error('WebAuthn register options error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /auth/webauthn/register — verify and store credential
+router.post('/webauthn/register', async (req, res) => {
+  const { credential, deviceName } = req.body;
+  const challengeToken = req.cookies?.webauthn_challenge;
+  if (!challengeToken) {
+    return res.status(400).json({ error: 'Challenge expired or missing' });
+  }
+
+  try {
+    const decoded = jwt.verify(challengeToken, process.env.JWT_SECRET);
+    if (decoded.type !== 'webauthn-register') {
+      return res.status(400).json({ error: 'Invalid challenge type' });
+    }
+
+    const verification = await verifyRegistrationResponse({
+      response: credential,
+      expectedChallenge: decoded.challenge,
+      expectedOrigin: ORIGIN,
+      expectedRPID: RP_ID,
+      requireUserVerification: false,
+    });
+
+    if (!verification.verified || !verification.registrationInfo) {
+      return res.status(400).json({ error: 'Registration verification failed' });
+    }
+
+    const { credentialID, credentialPublicKey, counter } = verification.registrationInfo;
+
+    await db('webauthn_credentials').insert({
+      id: Buffer.from(credentialID).toString('base64url'),
+      user_id: decoded.userId,
+      public_key: Buffer.from(credentialPublicKey).toString('base64url'),
+      counter: counter || 0,
+      transports: JSON.stringify(credential.response?.transports || []),
+      device_name: deviceName || null,
+      created_at: new Date().toISOString(),
+    });
+
+    res.clearCookie('webauthn_challenge', { httpOnly: true, sameSite: 'strict' });
+    res.json({ message: 'Biometric credential registered' });
+  } catch (err) {
+    console.error('WebAuthn register error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// POST /auth/webauthn/authenticate — authenticate with biometric, return JWT
+router.post('/webauthn/authenticate', async (req, res) => {
+  const { credential, email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  try {
+    const user = await db('users').where({ email }).first();
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+    const creds = await db('webauthn_credentials').where({ user_id: user.id });
+    if (!creds.length) return res.status(401).json({ error: 'No biometric credentials found' });
+
+    // Use challenge from credential response (stored client-side during the flow)
+    // We need to generate options first to have a challenge; frontend calls /authenticate-options before authenticating
+    // But to support the flow where frontend passes challenge, we use a cookie-based challenge
+    const challengeToken = req.cookies?.webauthn_auth_challenge;
+    if (!challengeToken) return res.status(400).json({ error: 'Challenge expired or missing' });
+
+    const decoded = jwt.verify(challengeToken, process.env.JWT_SECRET);
+    if (decoded.type !== 'webauthn-auth') return res.status(400).json({ error: 'Invalid challenge type' });
+
+    const expectedCredentialID = credential.id;
+    const storedCred = creds.find(c => c.id === expectedCredentialID);
+    if (!storedCred) return res.status(401).json({ error: 'Credential not found' });
+
+    const verification = await verifyAuthenticationResponse({
+      response: credential,
+      expectedChallenge: decoded.challenge,
+      expectedOrigin: ORIGIN,
+      expectedRPID: RP_ID,
+      credential: {
+        id: storedCred.id,
+        publicKey: Buffer.from(storedCred.public_key, 'base64url'),
+        counter: storedCred.counter,
+        transports: JSON.parse(storedCred.transports || '[]'),
+      },
+      requireUserVerification: false,
+    });
+
+    if (!verification.verified) {
+      return res.status(401).json({ error: 'Authentication verification failed' });
+    }
+
+    // Update counter
+    await db('webauthn_credentials')
+      .where({ id: storedCred.id })
+      .update({ counter: verification.authenticationInfo.newCounter, last_used_at: new Date().toISOString() });
+
+    const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    res.cookie('token', token, JWT_COOKIE_OPTIONS);
+    res.json({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        is_premium: user.is_premium,
+        monthly_expense_limit: user.monthly_expense_limit,
+        currency: user.currency,
+        max_groups: user.max_groups,
+        max_members_per_group: user.max_members_per_group,
+      }
+    });
+  } catch (err) {
+    console.error('WebAuthn authenticate error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// GET /auth/webauthn/authenticate-options — generate auth options for a given email
+router.post('/webauthn/authenticate-options', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+
+  try {
+    const user = await db('users').where({ email }).first();
+    if (!user) return res.status(401).json({ error: 'Invalid credentials' });
+
+    const creds = await db('webauthn_credentials').where({ user_id: user.id });
+    if (!creds.length) return res.status(401).json({ error: 'No biometric credentials found' });
+
+    const options = await generateAuthenticationOptions({
+      rpID: RP_ID,
+      allowCredentials: creds.map(c => ({
+        id: c.id,
+        transports: JSON.parse(c.transports || '[]'),
+      })),
+      userVerification: 'preferred',
+    });
+
+    const challengeToken = jwt.sign(
+      { challenge: options.challenge, userId: user.id, type: 'webauthn-auth' },
+      process.env.JWT_SECRET,
+      { expiresIn: '5m' }
+    );
+    res.cookie('webauthn_auth_challenge', challengeToken, { httpOnly: true, sameSite: 'strict', maxAge: 5 * 60 * 1000 });
+
+    res.json(options);
+  } catch (err) {
+    console.error('WebAuthn authenticate options error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Generate 2FA secret and QR code (requires auth)
 const auth = require('../middleware/auth');
 router.use(auth);
+
+// GET /auth/webauthn/credentials — list user's credentials
+router.get('/webauthn/credentials', async (req, res) => {
+  try {
+    const creds = await db('webauthn_credentials')
+      .where({ user_id: req.user.id })
+      .select('id', 'device_name', 'created_at', 'last_used_at');
+    res.json(creds);
+  } catch (err) {
+    console.error('WebAuthn credentials list error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// DELETE /auth/webauthn/credentials/:id — delete a credential
+router.delete('/webauthn/credentials/:id', async (req, res) => {
+  try {
+    const deleted = await db('webauthn_credentials')
+      .where({ id: req.params.id, user_id: req.user.id })
+      .del();
+    if (!deleted) return res.status(404).json({ error: 'Credential not found' });
+    res.json({ message: 'Credential removed' });
+  } catch (err) {
+    console.error('WebAuthn credential delete error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
 
 router.post('/2fa/setup', async (req, res) => {
   try {

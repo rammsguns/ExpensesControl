@@ -1,8 +1,9 @@
 import React from 'react';
 import { useTranslation } from '../i18n';
-import { Pencil, Trash2 } from 'lucide-react';
+import { hapticMedium, hapticError } from '../utils/haptics';
+import { Pencil, Trash2, Share2 } from 'lucide-react';
 
-export default function ExpenseCard({ expense, currentUser, onEdit, onDelete }) {
+export default function ExpenseCard({ expense, currentUser, onEdit, onDelete, onShare }) {
   const { t } = useTranslation();
 
   const date = expense.date
@@ -55,31 +56,48 @@ export default function ExpenseCard({ expense, currentUser, onEdit, onDelete }) 
         </div>
       )}
 
-      {/* Edit/Delete Actions */}
-      {isCreator && (
-        <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2 justify-end">
-          <button
-            onClick={() => onEdit?.(expense)}
-            className="min-h-[36px] inline-flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors duration-150 focus-ring"
-            aria-label={`${typeof t === 'function' ? t('edit') : 'Edit'} ${expense.description}`}
-          >
-            <Pencil size={14} aria-hidden="true" />
-            <span>{typeof t === 'function' ? t('edit') : 'Edit'}</span>
-          </button>
-          <button
-            onClick={() => {
-              if (window.confirm(typeof t === 'function' ? t('confirm_delete_expense') : 'Delete this expense?')) {
-                onDelete?.(expense.id);
-              }
-            }}
-            className="min-h-[36px] inline-flex items-center gap-1.5 text-xs bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-600 px-4 py-2 rounded-lg font-medium transition-colors duration-150 focus-ring"
-            aria-label={`${typeof t === 'function' ? t('delete') : 'Delete'} ${expense.description}`}
-          >
-            <Trash2 size={14} aria-hidden="true" />
-            <span>{typeof t === 'function' ? t('delete') : 'Delete'}</span>
-          </button>
-        </div>
-      )}
+      {/* Share / Edit / Delete Actions */}
+      <div className="mt-4 pt-4 border-t border-slate-100 flex gap-2 justify-end">
+        <button
+          onClick={() => {
+            hapticMedium();
+            onShare?.(expense);
+          }}
+          className="min-h-[36px] inline-flex items-center gap-1.5 text-xs bg-indigo-50 hover:bg-indigo-100 active:bg-indigo-200 text-indigo-600 px-4 py-2 rounded-lg font-medium transition-colors duration-150 focus-ring"
+          aria-label={`${typeof t === 'function' ? t('share') : 'Share'} ${expense.description}`}
+        >
+          <Share2 size={14} aria-hidden="true" />
+          <span>{typeof t === 'function' ? t('share') : 'Share'}</span>
+        </button>
+        {isCreator && (
+          <>
+            <button
+              onClick={() => {
+                hapticMedium();
+                onEdit?.(expense);
+              }}
+              className="min-h-[36px] inline-flex items-center gap-1.5 text-xs bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors duration-150 focus-ring"
+              aria-label={`${typeof t === 'function' ? t('edit') : 'Edit'} ${expense.description}`}
+            >
+              <Pencil size={14} aria-hidden="true" />
+              <span>{typeof t === 'function' ? t('edit') : 'Edit'}</span>
+            </button>
+            <button
+              onClick={() => {
+                hapticError();
+                if (window.confirm(typeof t === 'function' ? t('confirm_delete_expense') : 'Delete this expense?')) {
+                  onDelete?.(expense.id);
+                }
+              }}
+              className="min-h-[36px] inline-flex items-center gap-1.5 text-xs bg-rose-50 hover:bg-rose-100 active:bg-rose-200 text-rose-600 px-4 py-2 rounded-lg font-medium transition-colors duration-150 focus-ring"
+              aria-label={`${typeof t === 'function' ? t('delete') : 'Delete'} ${expense.description}`}
+            >
+              <Trash2 size={14} aria-hidden="true" />
+              <span>{typeof t === 'function' ? t('delete') : 'Delete'}</span>
+            </button>
+          </>
+        )}
+      </div>
     </div>
   );
 }

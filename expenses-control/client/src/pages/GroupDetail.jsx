@@ -11,7 +11,8 @@ import { SkeletonExpenseList } from '../components/SkeletonLoaders';
 import { EmptyState } from '../components/EmptyStates';
 import ExpenseCard from '../components/ExpenseCard';
 import { toast } from 'react-hot-toast';
-import { ArrowLeft, Plus, Handshake, Receipt, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal, X } from 'lucide-react';
+import { hapticMedium, hapticSuccess, hapticError } from '../utils/haptics';
+import { ArrowLeft, Plus, Handshake, Receipt, Home, Users, CheckCircle, Scale, Plane, Heart, MoreHorizontal, X, Share2, Link as LinkIcon } from 'lucide-react';
 
 const CATEGORY_ICONS = {
   food: { icon: Receipt, bg: 'bg-pink-100 text-pink-600' },
@@ -61,15 +62,36 @@ export default function GroupDetail() {
   const [memberEmail, setMemberEmail] = React.useState('');
   const [addError, setAddError] = React.useState('');
   const [showBalances, setShowBalances] = React.useState(false);
+  const [inviteLink, setInviteLink] = React.useState(null);
+  const [sharing, setSharing] = React.useState(false);
+
+  const generateInvite = async () => {
+    setSharing(true);
+    try {
+      const res = await api.post(`/invites/${id}`);
+      setInviteLink(res.data.inviteLink);
+      if (typeof t === 'function') {
+        toast.success(t('invite_created') || (language === 'es' ? 'Invitación creada' : 'Invite created'));
+      } else {
+        toast.success(language === 'es' ? 'Invitación creada' : 'Invite created');
+      }
+    } catch (err) {
+      toast.error(err.response?.data?.error || (language === 'es' ? 'Error al crear invitación' : 'Failed to create invite'));
+    } finally {
+      setSharing(false);
+    }
+  };
 
   const addMember = async (e) => {
     e.preventDefault();
     setAddError('');
     try {
+      hapticMedium();
       await api.post(`/groups/${id}/members`, { email: memberEmail });
       setMemberEmail('');
       setShowAddMember(false);
       qc.invalidateQueries({ queryKey: ['group', id] });
+      hapticSuccess();
       toast.success(language === 'es' ? 'Miembro agregado' : 'Member added');
     } catch (err) {
       if (err.response?.status === 403 && err.response?.data?.error === 'Member limit reached') {
@@ -182,6 +204,22 @@ export default function GroupDetail() {
                 ariaControls: 'balances-panel',
               },
               {
+                action: async () => {
+                  if (inviteLink) {
+                    const { shareGroup } = await import('../utils/share');
+                    const result = await shareGroup(group, inviteLink, t, language);
+                    if (result.copied) toast.success(language === 'es' ? 'Enlace copiado al portapapeles' : 'Link copied to clipboard');
+                    return;
+                  }
+                  await generateInvite();
+                },
+                icon: Share2,
+                bg: 'bg-sky-50',
+                text: 'text-sky-600',
+                label: language === 'es' ? 'Invitar' : 'Invite',
+                disabled: sharing,
+              },
+              {
                 to: `/add-expense/${id}`,
                 icon: Receipt,
                 bg: 'bg-emerald-50',
@@ -211,9 +249,10 @@ export default function GroupDetail() {
                 <button
                   key={i}
                   onClick={item.action}
+                  disabled={item.disabled}
                   aria-expanded={item.ariaExpanded}
                   aria-controls={item.ariaControls}
-                  className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl shadow-sm border p-3 hover:shadow-md active:scale-[0.97] transition-all duration-200 ease-in-out h-[88px] ${
+                  className={`flex flex-col items-center justify-center gap-1.5 rounded-2xl shadow-sm border p-3 hover:shadow-md active:scale-[0.97] transition-all duration-200 ease-in-out h-[88px] disabled:opacity-50 disabled:cursor-not-allowed ${
                     item.isActive
                       ? 'bg-indigo-50 border-indigo-200 text-indigo-700'
                       : 'bg-white border-slate-200 hover:border-indigo-200'
@@ -279,16 +318,26 @@ export default function GroupDetail() {
                         key={exp.id}
                         expense={exp}
                         currentUser={user}
-                        onEdit={(expense) => navigate(`/edit-expense/${id}/${expense.id}`)}
+                        onEdit={(expense) => {
+                          hapticMedium();
+                          navigate(`/edit-expense/${id}/${expense.id}`);
+                        }}
                         onDelete={async (expenseId) => {
+                          hapticError();
                           try {
                             await api.delete(`/expenses/${expenseId}`);
+                            hapticSuccess();
                             qc.invalidateQueries({ queryKey: ['expenses', id] });
                             qc.invalidateQueries({ queryKey: ['balances', id] });
                             toast.success(typeof t === 'function' ? t('toast_expense_deleted') : 'Expense deleted');
                           } catch (err) {
                             toast.error(err.response?.data?.error || 'Failed to delete expense');
                           }
+                        }}
+                        onShare={async (expense) => {
+                          const { shareExpense } = await import('../utils/share');
+                          const result = await shareExpense(expense, t, language);
+                          if (result.copied) toast.success(t('copied_to_clipboard') || (language === 'es' ? 'Copiado al portapapeles' : 'Copied to clipboard'));
                         }}
                       />
                     ))}

@@ -1,15 +1,19 @@
 import React from 'react';
 import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
+import { useBiometric } from '../hooks/useBiometric';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
-import { LogOut, Crown, Zap, Infinity, CheckCircle, ChevronDown, Star, Bell } from 'lucide-react';
+import { LogOut, Crown, Zap, Infinity, CheckCircle, ChevronDown, Star, Bell, Share2, Fingerprint, Trash2 } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
 
 export default function Account() {
   const { t, language } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
+  const { isSupported, credentials, isRegistered, register, removeCredential, refreshCredentials } = useBiometric();
+  const [bioRegistering, setBioRegistering] = React.useState(false);
+  const [deviceName, setDeviceName] = React.useState('');
   const [upgrading, setUpgrading] = React.useState(false);
   const [changingCurrency, setChangingCurrency] = React.useState(false);
   const [newCurrency, setNewCurrency] = React.useState(user?.currency || 'USD');
@@ -105,12 +109,54 @@ export default function Account() {
     }
   };
 
+  const handleShareApp = async () => {
+    const { shareApp } = await import('../utils/share');
+    const result = await shareApp(language);
+    if (result.copied) toast.success(language === 'es' ? 'Enlace copiado al portapapeles' : 'Link copied to clipboard');
+  };
+
   const handleTestPush = async () => {
     try {
       await api.post('/notifications/test');
       toast.success(language === 'es' ? 'Notificación de prueba enviada' : 'Test notification sent');
     } catch (err) {
       toast.error(err.response?.data?.error || (language === 'es' ? 'Error al enviar' : 'Failed to send'));
+    }
+  };
+
+  const handleRegisterBiometric = async () => {
+    if (!deviceName.trim()) {
+      toast.error(language === 'es' ? 'Ingresa un nombre para el dispositivo' : 'Enter a device name');
+      return;
+    }
+    setBioRegistering(true);
+    try {
+      const result = await register(deviceName.trim());
+      if (result.success) {
+        toast.success(language === 'es' ? 'Biometría registrada' : 'Biometric credential registered');
+        setDeviceName('');
+        await refreshCredentials();
+      } else {
+        toast.error(result.error || (language === 'es' ? 'Error al registrar' : 'Registration failed'));
+      }
+    } catch (err) {
+      toast.error(language === 'es' ? 'Error al registrar biometría' : 'Failed to register biometric');
+    }
+    setBioRegistering(false);
+  };
+
+  const handleRemoveBiometric = async (id) => {
+    if (!window.confirm(language === 'es' ? '¿Eliminar este dispositivo?' : 'Remove this device?')) return;
+    try {
+      const result = await removeCredential(id);
+      if (result.success) {
+        toast.success(language === 'es' ? 'Dispositivo eliminado' : 'Device removed');
+        await refreshCredentials();
+      } else {
+        toast.error(result.error || (language === 'es' ? 'Error al eliminar' : 'Failed to remove'));
+      }
+    } catch (err) {
+      toast.error(language === 'es' ? 'Error al eliminar' : 'Failed to remove device');
     }
   };
 
@@ -366,6 +412,31 @@ export default function Account() {
           </a>
         </div>
 
+        {/* Share App */}
+        <div className="mt-4">
+          <button
+            onClick={handleShareApp}
+            className="block w-full bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:bg-slate-50 transition text-left"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-sky-100 flex items-center justify-center">
+                  <Share2 size={18} className="text-sky-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">
+                    {language === 'es' ? 'Compartir app' : 'Share App'}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {language === 'es' ? 'Invita a amigos a usar ExpensesControl' : 'Invite friends to use ExpensesControl'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-slate-400 text-lg">&gt;</span>
+            </div>
+          </button>
+        </div>
+
         {/* Push Notifications */}
         <div className="mt-6">
           <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
@@ -423,6 +494,70 @@ export default function Account() {
             )}
           </div>
         </div>
+
+        {/* Biometric Authentication */}
+        {isSupported && (
+          <div className="mt-6">
+            <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-lg bg-emerald-100 flex items-center justify-center">
+                  <Fingerprint size={20} className="text-emerald-600" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-slate-900">{language === 'es' ? 'Autenticación Biométrica' : 'Biometric Authentication'}</h4>
+                  <p className="text-sm text-slate-500">{language === 'es' ? 'Inicia sesión con tu huella o Face ID' : 'Sign in with your fingerprint or Face ID'}</p>
+                </div>
+              </div>
+
+              {credentials.length > 0 && (
+                <div className="mb-4 space-y-2">
+                  <p className="text-sm font-medium text-slate-700">
+                    {language === 'es' ? 'Dispositivos registrados:' : 'Registered devices:'}
+                  </p>
+                  {credentials.map((cred) => (
+                    <div key={cred.id} className="flex items-center justify-between bg-slate-50 rounded-lg px-3 py-2">
+                      <div className="min-w-0">
+                        <p className="text-sm text-slate-700 truncate">{cred.device_name || (language === 'es' ? 'Dispositivo' : 'Device')}</p>
+                        <p className="text-xs text-slate-400">
+                          {language === 'es' ? 'Usado: ' : 'Last used: '}
+                          {cred.last_used_at ? new Date(cred.last_used_at).toLocaleDateString() : (language === 'es' ? 'Nunca' : 'Never')}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => handleRemoveBiometric(cred.id)}
+                        className="ml-2 p-2 text-rose-500 hover:bg-rose-50 rounded-lg transition flex-shrink-0"
+                        aria-label={language === 'es' ? 'Eliminar dispositivo' : 'Remove device'}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <input
+                  type="text"
+                  value={deviceName}
+                  onChange={(e) => setDeviceName(e.target.value)}
+                  placeholder={language === 'es' ? 'Nombre del dispositivo (ej. iPhone de Angel)' : "Device name (e.g. Angel's iPhone)"}
+                  className="w-full border border-slate-200 rounded-lg px-3 py-2.5 text-base focus:ring-2 focus:ring-emerald-500 outline-none min-h-[44px]"
+                />
+                <button
+                  onClick={handleRegisterBiometric}
+                  disabled={bioRegistering}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 text-white rounded-lg px-4 py-2.5 font-medium text-sm transition disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  <Fingerprint size={18} />
+                  {bioRegistering
+                    ? (language === 'es' ? 'Registrando...' : 'Registering...')
+                    : (language === 'es' ? 'Agregar dispositivo biométrico' : 'Add biometric device')
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Actions */}
         <div className="mt-6 space-y-2">

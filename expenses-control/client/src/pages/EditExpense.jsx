@@ -7,6 +7,7 @@ import api from '../api';
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
 import { toast } from 'react-hot-toast';
+import { hapticMedium, hapticSuccess, hapticError, hapticLight } from '../utils/haptics';
 import { ArrowLeft, Home, Pencil, Receipt } from 'lucide-react';
 
 export default function EditExpense() {
@@ -101,6 +102,7 @@ export default function EditExpense() {
     if (splitType === 'exact') {
       const parsedAmount = parseFloat(amount);
       if (Math.abs(splitTotal - parsedAmount) > 0.01) {
+        hapticError();
         setError(`Split amounts must total MX$${parsedAmount.toFixed(2)}. Current total: MX$${splitTotal.toFixed(2)}`);
         return;
       }
@@ -113,12 +115,14 @@ export default function EditExpense() {
         return sum + (isNaN(val) ? 0 : val);
       }, 0);
       if (Math.abs(totalPct - 100) > 0.1) {
+        hapticError();
         setError(`Percentages must sum to 100%. Current total: ${totalPct.toFixed(1)}%`);
         return;
       }
     }
 
     setLoading(true);
+    hapticMedium();
 
     try {
       const payload = {
@@ -136,11 +140,13 @@ export default function EditExpense() {
       };
 
       await api.put(`/expenses/${expenseId}`, payload);
+      hapticSuccess();
       toast.success(t('toast_expense_edited'));
       qc.invalidateQueries({ queryKey: ['expenses', groupId] });
       qc.invalidateQueries({ queryKey: ['expense', expenseId] });
       navigate(`/group/${groupId}`);
     } catch (err) {
+      hapticError();
       setError(err.response?.data?.error || 'Failed to update expense');
       toast.error(t('toast_error_generic'));
     }

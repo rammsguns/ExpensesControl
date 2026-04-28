@@ -4,6 +4,8 @@ import { useAuth } from './context/AuthContext';
 import PageTransition from './components/PageTransition';
 
 import Dashboard from './pages/Dashboard';
+import OfflineBanner from './components/OfflineBanner';
+import InstallPrompt from './components/InstallPrompt';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import GroupDetail from './pages/GroupDetail';
@@ -16,6 +18,7 @@ import Account from './pages/Account';
 import TwoFALogin from './pages/TwoFALogin';
 import TwoFASetup from './pages/TwoFASetup';
 import SearchExpenses from './pages/SearchExpenses';
+import JoinGroup from './pages/JoinGroup';
 import { SkeletonGroupGrid } from './components/SkeletonLoaders';
 
 const ProtectedRoute = ({ children }) => {
@@ -40,26 +43,31 @@ function App() {
   const location = useLocation();
 
   return (
-    <PageTransition key={location.pathname}>
-      <Routes location={location}>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/2fa-login" element={<TwoFALogin />} />
-        
-        <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/search" element={<ProtectedRoute><SearchExpenses /></ProtectedRoute>} />
-        <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
-        <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
-        <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
-        <Route path="/2fa-setup" element={<ProtectedRoute><TwoFASetup /></ProtectedRoute>} />
-        
-        <Route path="/group/:id" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
-        <Route path="/add-expense" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-        <Route path="/add-expense/:groupId" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
-        <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
-        <Route path="/settle/:groupId" element={<ProtectedRoute><SettleUp /></ProtectedRoute>} />
-      </Routes>
-    </PageTransition>
+    <>
+      <OfflineBanner />
+      <InstallPrompt />
+      <PageTransition key={location.pathname}>
+        <Routes location={location}>
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/2fa-login" element={<TwoFALogin />} />
+
+          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/search" element={<ProtectedRoute><SearchExpenses /></ProtectedRoute>} />
+          <Route path="/friends" element={<ProtectedRoute><Friends /></ProtectedRoute>} />
+          <Route path="/activity" element={<ProtectedRoute><Activity /></ProtectedRoute>} />
+          <Route path="/account" element={<ProtectedRoute><Account /></ProtectedRoute>} />
+          <Route path="/2fa-setup" element={<ProtectedRoute><TwoFASetup /></ProtectedRoute>} />
+
+          <Route path="/group/:id" element={<ProtectedRoute><GroupDetail /></ProtectedRoute>} />
+          <Route path="/add-expense" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+          <Route path="/add-expense/:groupId" element={<ProtectedRoute><AddExpense /></ProtectedRoute>} />
+          <Route path="/edit-expense/:groupId/:expenseId" element={<ProtectedRoute><EditExpense /></ProtectedRoute>} />
+          <Route path="/settle/:groupId" element={<ProtectedRoute><SettleUp /></ProtectedRoute>} />
+        <Route path="/join/:groupId" element={<JoinGroup />} />
+        </Routes>
+      </PageTransition>
+    </>
   );
 }
 
