@@ -99,7 +99,7 @@ cd android
 - **Valid Until:** September 13, 2053
 - **Certificate Fingerprint (SHA-256):**
   ```
-  C1:D8:B6:38:75:D1:B6:D4:08:D8:B4:8A:58:AC:B2:FF:E1:5A:56:4A:64:E3:F4:65:88:43:D3:8A:18:52:76:56
+  F1:33:86:48:C4:4C:8B:E0:D2:A4:F8:9B:B6:05:AC:E3:02:62:4E:5B:5B:DA:A3:98:76:85:FC:88:E6:86:B5:69
   ```
 
 **Back up to:**

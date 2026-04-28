@@ -1,0 +1,17 @@
+{
+  "short_name": "ExpensesControl",
+  "name": "ExpensesControl - Split Expenses",
+  "description": "Split expenses with friends and family easily",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "start_url": "/",
+  "display": "standalone",
+  "theme_color": "#4f46e5",
+  "background_color": "#f8fafc",
+  "orientation": "portrait"
+}
