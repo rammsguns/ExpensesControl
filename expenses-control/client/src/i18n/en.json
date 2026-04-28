@@ -101,5 +101,15 @@
   "expenses_used": "{{used}} of {{limit}} expenses used",
   "unlimited": "Unlimited",
   "premium_active": "Premium Active",
-  "premium_desc": "You have unlimited expenses"
+  "premium_desc": "You have unlimited expenses",
+  "push_notifications": "Push Notifications",
+  "push_enabled": "Enabled",
+  "push_disabled": "Disabled",
+  "push_denied": "Denied (change in browser settings)",
+  "push_not_supported": "Push notifications not supported",
+  "enable_push": "Enable Push Notifications",
+  "disable_push": "Disable Push Notifications",
+  "test_notification": "Send Test Notification",
+  "push_desc": "Get notified when someone adds expenses or settles up",
+  "push_unsupported": "Push notifications are not supported in this browser"
 }

@@ -11,6 +11,7 @@ const groupRoutes = require('./routes/groups');
 const expenseRoutes = require('./routes/expenses');
 const settlementRoutes = require('./routes/settlements');
 const balanceRoutes = require('./routes/balances');
+const notificationRoutes = require('./routes/notifications');
 
 // Startup warning for weak secrets
 const DEFAULT_SECRETS = [
@@ -94,6 +95,7 @@ app.use('/api/groups', groupRoutes);
 app.use('/api/expenses', expenseRoutes);
 app.use('/api/settlements', settlementRoutes);
 app.use('/api/balances', balanceRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });

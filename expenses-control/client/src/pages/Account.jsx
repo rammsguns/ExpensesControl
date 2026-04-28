@@ -3,7 +3,7 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
-import { LogOut, Crown, Zap, Infinity, CheckCircle, ChevronDown, Star } from 'lucide-react';
+import { LogOut, Crown, Zap, Infinity, CheckCircle, ChevronDown, Star, Bell } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
 
@@ -13,6 +13,106 @@ export default function Account() {
   const [upgrading, setUpgrading] = React.useState(false);
   const [changingCurrency, setChangingCurrency] = React.useState(false);
   const [newCurrency, setNewCurrency] = React.useState(user?.currency || 'USD');
+
+  // Push notifications state
+  const [pushSupported, setPushSupported] = React.useState(true);
+  const [pushPermission, setPushPermission] = React.useState(Notification.permission);
+  const [vapidPublicKey, setVapidPublicKey] = React.useState(null);
+  const [isSubscribed, setIsSubscribed] = React.useState(false);
+
+  // Check Push API support and fetch VAPID key on mount
+  React.useEffect(() => {
+    const supported = 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+    setPushSupported(supported);
+
+    if (!supported) return;
+
+    // Fetch VAPID public key
+    api.get('/notifications/vapid-public-key')
+      .then(res => setVapidPublicKey(res.data.publicKey))
+      .catch(() => {});
+
+    // Check if user already has a subscription
+    if (Notification.permission === 'granted') {
+      checkSubscription();
+    }
+  }, []);
+
+  // URL-safe base64 to Uint8Array converter
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat(4 - (base64String.length % 4));
+    const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+    const rawData = atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  async function checkSubscription() {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      setIsSubscribed(!!sub);
+    } catch {
+      setIsSubscribed(false);
+    }
+  }
+
+  const handleEnablePush = async () => {
+    try {
+      // 1. Request permission
+      const perm = await Notification.requestPermission();
+      setPushPermission(perm);
+      if (perm !== 'granted') return;
+
+      // 2. Register service worker
+      const registration = await navigator.serviceWorker.register('/sw.js');
+
+      // 3. Subscribe
+      const subscription = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+      });
+
+      // 4. Send to backend
+      await api.post('/notifications/subscribe', {
+        endpoint: subscription.endpoint,
+        p256dh: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('p256dh')))),
+        auth: btoa(String.fromCharCode(...new Uint8Array(subscription.getKey('auth')))),
+      });
+
+      setIsSubscribed(true);
+      toast.success(language === 'es' ? 'Notificaciones activadas' : 'Push notifications enabled');
+    } catch (err) {
+      console.error('Push enable error:', err);
+      toast.error(language === 'es' ? 'Error al activar notificaciones' : 'Failed to enable notifications');
+    }
+  };
+
+  const handleDisablePush = async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+      await api.delete('/notifications/subscribe');
+      setIsSubscribed(false);
+      toast.success(language === 'es' ? 'Notificaciones desactivadas' : 'Push notifications disabled');
+    } catch (err) {
+      console.error('Push disable error:', err);
+      toast.error(language === 'es' ? 'Error al desactivar' : 'Failed to disable notifications');
+    }
+  };
+
+  const handleTestPush = async () => {
+    try {
+      await api.post('/notifications/test');
+      toast.success(language === 'es' ? 'Notificación de prueba enviada' : 'Test notification sent');
+    } catch (err) {
+      toast.error(err.response?.data?.error || (language === 'es' ? 'Error al enviar' : 'Failed to send'));
+    }
+  };
 
   React.useEffect(() => {
     refreshUser();
@@ -264,6 +364,64 @@ export default function Account() {
               <span className="text-slate-400 text-lg">&gt;</span>
             </div>
           </a>
+        </div>
+
+        {/* Push Notifications */}
+        <div className="mt-6">
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-5">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-lg bg-violet-100 flex items-center justify-center">
+                <Bell size={20} className="text-violet-600" />
+              </div>
+              <div>
+                <h4 className="font-bold text-slate-900">{t('push_notifications')}</h4>
+                <p className="text-sm text-slate-500">{t('push_desc')}</p>
+              </div>
+            </div>
+
+            {pushSupported ? (
+              <>                
+                <div className="flex items-center gap-2 mb-3">
+                  <div className={`w-2 h-2 rounded-full ${
+                    pushPermission === 'granted' ? 'bg-emerald-500' :
+                    pushPermission === 'denied' ? 'bg-rose-500' : 'bg-amber-500'
+                  }`} />
+                  <span className="text-sm text-slate-600">
+                    {pushPermission === 'granted' ? t('push_enabled') :
+                     pushPermission === 'denied' ? t('push_denied') :
+                     (language === 'es' ? 'No solicitado' : 'Not requested')}
+                  </span>
+                </div>
+
+                {isSubscribed ? (
+                  <div className="space-y-2">
+                    <button
+                      onClick={handleTestPush}
+                      className="w-full bg-violet-100 hover:bg-violet-200 text-violet-700 rounded-lg px-4 py-2.5 font-medium text-sm transition"
+                    >
+                      {t('test_notification')}
+                    </button>
+                    <button
+                      onClick={handleDisablePush}
+                      className="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg px-4 py-2.5 font-medium text-sm transition"
+                    >
+                      {t('disable_push')}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={handleEnablePush}
+                    disabled={pushPermission === 'denied'}
+                    className="w-full bg-violet-600 hover:bg-violet-700 disabled:bg-slate-300 text-white rounded-lg px-4 py-2.5 font-medium text-sm transition disabled:cursor-not-allowed"
+                  >
+                    {t('enable_push')}
+                  </button>
+                )}
+              </>
+            ) : (
+              <p className="text-sm text-slate-500">{t('push_unsupported')}</p>
+            )}
+          </div>
         </div>
 
         {/* Actions */}

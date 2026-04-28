@@ -93,5 +93,15 @@
   "accessibility_settings": "Configuración de accesibilidad",
   "toggle_high_contrast": "Activar modo alto contraste",
   "toggle_large_text": "Activar modo texto grande",
-  "toggle_reduced_motion": "Activar modo movimiento reducido"
+  "toggle_reduced_motion": "Activar modo movimiento reducido",
+  "push_notifications": "Notificaciones Push",
+  "push_enabled": "Activadas",
+  "push_disabled": "Desactivadas",
+  "push_denied": "Denegadas (cambia en la configuración del navegador)",
+  "push_not_supported": "Notificaciones no compatibles",
+  "enable_push": "Activar Notificaciones",
+  "disable_push": "Desactivar Notificaciones",
+  "test_notification": "Enviar Notificación de Prueba",
+  "push_desc": "Recibe notificaciones cuando alguien agrega gastos o salda deudas",
+  "push_unsupported": "Las notificaciones push no son compatibles en este navegador"
 }
