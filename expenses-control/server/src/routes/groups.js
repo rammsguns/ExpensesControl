@@ -16,6 +16,25 @@ router.post('/', async (req, res) => {
   const { name, description, type } = req.body;
   const creatorId = req.user.id;
   try {
+    // Check group limit for non-premium users
+    const user = await db('users').where({ id: creatorId }).first();
+    if (!user.is_premium) {
+      const groupCount = await db('group_members')
+        .where({ user_id: creatorId })
+        .count('group_id as count')
+        .first();
+      const currentGroups = parseInt(groupCount?.count || 0, 10);
+      const maxGroups = user.max_groups || 10;
+      if (currentGroups >= maxGroups) {
+        return res.status(403).json({
+          error: 'Group limit reached',
+          limit: maxGroups,
+          current: currentGroups,
+          message: 'You have reached your limit of ' + maxGroups + ' groups. Upgrade to premium for unlimited groups.'
+        });
+      }
+    }
+
     const [groupId] = await db('groups').insert({ 
       name: sanitize(name), 
       description: sanitize(description), 
@@ -72,6 +91,25 @@ router.post('/:id/members', requireGroupMember, async (req, res) => {
       .where({ group_id: groupId, user_id: member.id })
       .first();
     if (existing) return res.status(409).json({ error: 'Already a member' });
+
+    // Check member limit for non-premium users
+    const user = await db('users').where({ id: req.user.id }).first();
+    if (!user.is_premium) {
+      const memberCount = await db('group_members')
+        .where({ group_id: groupId })
+        .count('user_id as count')
+        .first();
+      const currentMembers = parseInt(memberCount?.count || 0, 10);
+      const maxMembers = user.max_members_per_group || 2;
+      if (currentMembers >= maxMembers) {
+        return res.status(403).json({
+          error: 'Member limit reached',
+          limit: maxMembers,
+          current: currentMembers,
+          message: 'You have reached your limit of ' + maxMembers + ' members per group. Upgrade to premium for unlimited members.'
+        });
+      }
+    }
 
     await db('group_members').insert({ group_id: groupId, user_id: member.id });
     res.status(201).json({ message: 'Member added', member: { id: member.id, name: member.name } });

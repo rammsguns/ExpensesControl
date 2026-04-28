@@ -20,7 +20,7 @@ export default function Friends() {
   const settled = balances.filter(b => b.userId !== user?.id && Math.abs(b.balance) <= 0.01);
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 safe-area-bottom">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-4">
         <h2 className="text-xl font-bold text-slate-900 mb-4">

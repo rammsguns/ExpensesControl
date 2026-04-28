@@ -118,7 +118,7 @@ router.post('/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit, currency: user.currency } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit, currency: user.currency, max_groups: user.max_groups, max_members_per_group: user.max_members_per_group } });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -147,7 +147,7 @@ router.post('/2fa/login', authLimiter, async (req, res) => {
 
     const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, { expiresIn: '24h' });
     res.cookie('token', token, JWT_COOKIE_OPTIONS);
-    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit, currency: user.currency } });
+    res.json({ user: { id: user.id, name: user.name, email: user.email, is_premium: user.is_premium, monthly_expense_limit: user.monthly_expense_limit, currency: user.currency, max_groups: user.max_groups, max_members_per_group: user.max_members_per_group } });
   } catch (err) {
     if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
       return res.status(401).json({ error: 'Invalid or expired token' });
@@ -279,7 +279,9 @@ router.get('/me', async (req, res) => {
       is_premium: user.is_premium,
       monthly_expense_limit: user.monthly_expense_limit,
       monthly_expense_count: parseInt(expenseCount?.count || 0, 10),
-      currency: user.currency
+      currency: user.currency,
+      max_groups: user.max_groups,
+      max_members_per_group: user.max_members_per_group
     });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
@@ -302,7 +304,9 @@ router.post('/upgrade', async (req, res) => {
     // For now, simulate successful payment
     await db('users').where({ id: req.user.id }).update({
       is_premium: true,
-      monthly_expense_limit: null // unlimited
+      monthly_expense_limit: null, // unlimited
+      max_groups: null,
+      max_members_per_group: null
     });
 
     res.json({
@@ -312,6 +316,31 @@ router.post('/upgrade', async (req, res) => {
     });
   } catch (err) {
     console.error('Upgrade error:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+// Update user's default currency
+router.put('/currency', async (req, res) => {
+  const { currency } = req.body;
+  const VALID_CURRENCIES = ['USD','MXN','EUR','GBP','CAD','AUD','JPY','BRL','ARS','COP','CLP','PEN'];
+  if (!currency || !VALID_CURRENCIES.includes(currency)) {
+    return res.status(400).json({ error: 'Invalid currency' });
+  }
+  try {
+    await db('users').where({ id: req.user.id }).update({ currency });
+    const updatedUser = await db('users').where({ id: req.user.id }).first();
+    res.json({
+      id: updatedUser.id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      is_premium: updatedUser.is_premium,
+      monthly_expense_limit: updatedUser.monthly_expense_limit,
+      monthly_expense_count: updatedUser.monthly_expense_count,
+      currency: updatedUser.currency
+    });
+  } catch (err) {
+    console.error('Update currency error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 });

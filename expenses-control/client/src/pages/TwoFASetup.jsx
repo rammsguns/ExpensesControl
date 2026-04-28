@@ -48,7 +48,7 @@ export default function TwoFASetup() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 safe-area-bottom">
       <div className="max-w-md mx-auto px-4 py-6">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">

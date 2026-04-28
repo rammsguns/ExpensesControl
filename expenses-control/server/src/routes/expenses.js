@@ -67,7 +67,7 @@ router.get('/search', auth, async (req, res) => {
 
 // POST / - Create new expense
 router.post('/', auth, requireGroupMember, async (req, res) => {
-  const { groupId, description, amount, paidBy, splitType, splits } = req.body;
+  const { groupId, description, amount, paidBy, splitType, splits, currency } = req.body;
 
   try {
     // Validate input
@@ -132,7 +132,8 @@ router.post('/', auth, requireGroupMember, async (req, res) => {
       description: sanitize(description),
       amount: parsedAmount,
       paid_by: paidBy,
-      split_type: splitType
+      split_type: splitType,
+      currency: currency || user.currency || 'USD'
     });
 
     // Create splits

@@ -57,6 +57,34 @@ html {
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
+/* Better mobile touch behavior */
+html, body {
+  overscroll-behavior-y: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Prevent text size adjustment on orientation change */
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Prevent pull-to-refresh and callout menus */
+body {
+  touch-action: pan-y;
+  -webkit-touch-callout: none;
+}
+
+/* Disable user-select on interactive elements */
+button, a, [role="button"] {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Ensure proper safe area padding on bottom nav */
+.bottom-nav-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
 /* Reduced motion preference */
 @media (prefers-reduced-motion: reduce) {
   *,

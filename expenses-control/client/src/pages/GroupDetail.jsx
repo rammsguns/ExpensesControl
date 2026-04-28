@@ -72,13 +72,17 @@ export default function GroupDetail() {
       qc.invalidateQueries({ queryKey: ['group', id] });
       toast.success(language === 'es' ? 'Miembro agregado' : 'Member added');
     } catch (err) {
-      setAddError(err.response?.data?.error || (language === 'es' ? 'Error al agregar miembro' : 'Failed to add member'));
+      if (err.response?.status === 403 && err.response?.data?.error === 'Member limit reached') {
+        toast.error(err.response.data.message || (language === 'es' ? 'Límite de miembros alcanzado' : 'Member limit reached'));
+      } else {
+        toast.error(err.response?.data?.error || (language === 'es' ? 'Error al agregar miembro' : 'Failed to add member'));
+      }
     }
   };
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-slate-50 pb-24">
+      <div className="min-h-screen bg-slate-50 pb-24 safe-area-bottom">
         <Navbar />
         <div className="max-w-lg mx-auto px-4 py-6">
           <SkeletonExpenseList count={3} />
@@ -112,7 +116,7 @@ export default function GroupDetail() {
   const members = group.members || [];
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24 safe-area-bottom">
       <Navbar />
       <PageTransition>
         <div className="max-w-lg mx-auto">

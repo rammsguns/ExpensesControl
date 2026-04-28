@@ -95,7 +95,11 @@ export default function Dashboard() {
       qc.invalidateQueries({ queryKey: ['groups'] });
       navigate(`/group/${groupId}`);
     } catch (err) {
-      toast.error(err.response?.data?.error || (typeof t === 'function' ? t('error') : 'Something went wrong'));
+      if (err.response?.status === 403 && err.response?.data?.error === 'Group limit reached') {
+        toast.error(err.response.data.message || (language === 'es' ? 'Límite de grupos alcanzado' : 'Group limit reached'));
+      } else {
+        toast.error(err.response?.data?.error || (typeof t === 'function' ? t('error') : 'Something went wrong'));
+      }
     }
     setCreating(false);
   };
@@ -104,7 +108,7 @@ export default function Dashboard() {
   const getGroupIcon = (type) => GROUP_TYPES.find(g => g.id === type)?.icon || MoreHorizontal;
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24 safe-area-bottom">
       <Navbar />
       <PageTransition>
         <div id="main-content" tabIndex="-1" className="max-w-lg mx-auto px-4 py-6">

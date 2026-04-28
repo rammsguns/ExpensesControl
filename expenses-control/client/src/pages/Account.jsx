@@ -3,7 +3,7 @@ import { useTranslation } from '../i18n';
 import { useAuth } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
-import { LogOut, Crown, Zap, Infinity, CheckCircle } from 'lucide-react';
+import { LogOut, Crown, Zap, Infinity, CheckCircle, ChevronDown, Star } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
 
@@ -11,14 +11,48 @@ export default function Account() {
   const { t, language } = useTranslation();
   const { user, logout, refreshUser } = useAuth();
   const [upgrading, setUpgrading] = React.useState(false);
+  const [changingCurrency, setChangingCurrency] = React.useState(false);
+  const [newCurrency, setNewCurrency] = React.useState(user?.currency || 'USD');
 
   React.useEffect(() => {
     refreshUser();
   }, []);
 
+  React.useEffect(() => {
+    setNewCurrency(user?.currency || 'USD');
+  }, [user?.currency]);
+
   const isPremium = user?.is_premium;
   const limit = user?.monthly_expense_limit || 100;
   const used = user?.monthly_expense_count || 0;
+
+  const currencies = [
+    { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
+    { code: 'MXN', name: 'Mexican Peso', flag: '🇲🇽' },
+    { code: 'EUR', name: 'Euro', flag: '🇪🇺' },
+    { code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
+    { code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
+    { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
+    { code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' },
+    { code: 'BRL', name: 'Brazilian Real', flag: '🇧🇷' },
+    { code: 'ARS', name: 'Argentine Peso', flag: '🇦🇷' },
+    { code: 'COP', name: 'Colombian Peso', flag: '🇨🇴' },
+    { code: 'CLP', name: 'Chilean Peso', flag: '🇨🇱' },
+    { code: 'PEN', name: 'Peruvian Sol', flag: '🇵🇪' },
+  ];
+
+  const handleChangeCurrency = async () => {
+    setChangingCurrency(true);
+    try {
+      await api.put('/auth/currency', { currency: newCurrency });
+      toast.success(language === 'es' ? 'Moneda actualizada' : 'Currency updated');
+      await refreshUser();
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Failed to update currency');
+    } finally {
+      setChangingCurrency(false);
+    }
+  };
 
   const handleUpgrade = async () => {
     if (!window.confirm(language === 'es' 
@@ -41,7 +75,7 @@ export default function Account() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
+    <div className="min-h-screen bg-slate-50 pb-20 safe-area-bottom">
       <Navbar />
       <div className="max-w-lg mx-auto px-4 py-4">
         <h2 className="text-xl font-bold text-slate-900 mb-6">
@@ -99,6 +133,14 @@ export default function Account() {
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <CheckCircle size={14} className="text-emerald-500" />
                   <span>{language === 'es' ? 'Gastos ilimitados' : 'Unlimited expenses'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <span>{language === 'es' ? 'Grupos ilimitados' : 'Unlimited groups'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600">
+                  <CheckCircle size={14} className="text-emerald-500" />
+                  <span>{language === 'es' ? 'Miembros ilimitados por grupo' : 'Unlimited members per group'}</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600">
                   <CheckCircle size={14} className="text-emerald-500" />
@@ -161,12 +203,67 @@ export default function Account() {
               {language === 'es' ? '🇲🇽 Español' : '🇺🇸 English'}
             </span>
           </div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex justify-between items-center">
-            <span className="text-slate-700 text-sm font-medium">
-              {language === 'es' ? 'Moneda' : 'Currency'}
-            </span>
-            <span className="text-slate-500 text-sm">{user?.currency || 'USD'}</span>
+          
+          {/* Currency selector */}
+          <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-4">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-slate-700 text-sm font-medium">
+                {language === 'es' ? 'Moneda predeterminada' : 'Default Currency'}
+              </span>
+              <span className="text-slate-500 text-sm">{user?.currency || 'USD'}</span>
+            </div>
+            <div className="relative">
+              <select
+                value={newCurrency}
+                onChange={(e) => setNewCurrency(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]"
+              >
+                {currencies.map((c) => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.code} — {c.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
+            </div>
+            <button
+              onClick={handleChangeCurrency}
+              disabled={changingCurrency || newCurrency === (user?.currency || 'USD')}
+              className="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 text-white rounded-lg px-4 py-2 font-medium text-sm transition"
+            >
+              {changingCurrency 
+                ? (language === 'es' ? 'Guardando...' : 'Saving...')
+                : (language === 'es' ? 'Cambiar moneda' : 'Change Currency')
+              }
+            </button>
           </div>
+        </div>
+
+        {/* Rate App */}
+        <div className="mt-4">
+          <a
+            href="https://play.google.com/store/apps/details?id=com.expensescontrol"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block bg-white rounded-xl shadow-sm border border-slate-200 p-4 hover:bg-slate-50 transition"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
+                  <Star size={18} className="text-amber-600" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">
+                    {language === 'es' ? 'Calificar en Play Store' : 'Rate on Play Store'}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {language === 'es' ? 'Nos ayuda mucho tu opinión' : 'Your feedback helps us improve'}
+                  </p>
+                </div>
+              </div>
+              <span className="text-slate-400 text-lg">&gt;</span>
+            </div>
+          </a>
         </div>
 
         {/* Actions */}

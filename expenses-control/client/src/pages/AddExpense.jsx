@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from '../i18n';
+import { useAuth } from '../context/AuthContext';
 import api from '../api';
 import Navbar from '../components/Navbar';
 import PageTransition from '../components/PageTransition';
@@ -19,13 +20,31 @@ export default function AddExpense() {
     queryFn: () => api.get(`/groups/${groupId}`).then(r => r.data),
   });
 
-  // Fetch all groups for selector
   const { data: groups = [] } = useQuery({
     queryKey: ['groups'],
     queryFn: () => api.get('/groups').then(r => r.data),
   });
 
+  const { data: user } = useAuth();
+  const userCurrency = user?.currency || 'USD';
+
+  const currencies = [
+    { code: 'USD', name: 'US Dollar', flag: '🇺🇸' },
+    { code: 'MXN', name: 'Mexican Peso', flag: '🇲🇽' },
+    { code: 'EUR', name: 'Euro', flag: '🇪🇺' },
+    { code: 'GBP', name: 'British Pound', flag: '🇬🇧' },
+    { code: 'CAD', name: 'Canadian Dollar', flag: '🇨🇦' },
+    { code: 'AUD', name: 'Australian Dollar', flag: '🇦🇺' },
+    { code: 'JPY', name: 'Japanese Yen', flag: '🇯🇵' },
+    { code: 'BRL', name: 'Brazilian Real', flag: '🇧🇷' },
+    { code: 'ARS', name: 'Argentine Peso', flag: '🇦🇷' },
+    { code: 'COP', name: 'Colombian Peso', flag: '🇨🇴' },
+    { code: 'CLP', name: 'Chilean Peso', flag: '🇨🇱' },
+    { code: 'PEN', name: 'Peruvian Sol', flag: '🇵🇪' },
+  ];
+
   const [selectedGroupId, setSelectedGroupId] = React.useState(groupId || '');
+  const [selectedCurrency, setSelectedCurrency] = React.useState(userCurrency);
 
   // Fetch full details for the selected group (members needed for Paid By dropdown)
   const { data: selectedGroup } = useQuery({
@@ -123,7 +142,7 @@ export default function AddExpense() {
     if (splitType === 'exact') {
       const parsedAmount = parseFloat(amount);
       if (Math.abs(splitTotal - parsedAmount) > 0.01) {
-        setError(`Split amounts must total MX$${parsedAmount.toFixed(2)}. Current total: MX$${splitTotal.toFixed(2)}`);
+        setError(`Split amounts must total {selectedCurrency}${parsedAmount.toFixed(2)}. Current total: {selectedCurrency}${splitTotal.toFixed(2)}`);
         return;
       }
     }
@@ -149,6 +168,7 @@ export default function AddExpense() {
         amount: parseFloat(amount),
         paidBy: parseInt(paidBy),
         splitType,
+        currency: selectedCurrency,
         splits: splitType === 'equal' ? [] : splits.map(s => ({
           userId: parseInt(s.userId),
           ...(splitType === 'percentage' ? { percentage: parseFloat(s.value) } : {}),
@@ -178,7 +198,7 @@ export default function AddExpense() {
   const amountError = getFieldError('amount');
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-24">
+    <div className="min-h-screen bg-slate-50 pb-24 safe-area-bottom">
       <Navbar />
       <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
@@ -233,6 +253,28 @@ export default function AddExpense() {
             </div>
           </div>
 
+          {/* Currency Selector */}
+          <div>
+            <label htmlFor="expense-currency" className="block text-sm font-medium text-slate-700 mb-1">
+              {language === 'es' ? 'Moneda' : 'Currency'}
+            </label>
+            <div className="relative">
+              <select
+                id="expense-currency"
+                value={selectedCurrency}
+                onChange={(e) => setSelectedCurrency(e.target.value)}
+                className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none focus-ring min-h-[44px]"
+              >
+                {currencies.map(c => (
+                  <option key={c.code} value={c.code}>
+                    {c.flag} {c.code} — {c.name}
+                  </option>
+                ))}
+              </select>
+              <ChevronDown size={18} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" aria-hidden="true" />
+            </div>
+          </div>
+
           {/* Show form fields only when group is selected */}
           {selectedGroupId ? (
             <>
@@ -259,7 +301,7 @@ export default function AddExpense() {
 
           <div>
             <label htmlFor="expense-amount" className="block text-sm font-medium text-slate-700 mb-1">
-              {t('amount')} (MXN)
+              {t('amount')} ({selectedCurrency})
               {splitType === 'exact' && (
                 <span className="text-xs text-slate-400 ml-1 font-normal">
                   (auto-calculated from splits)
@@ -366,7 +408,7 @@ export default function AddExpense() {
                     step="0.01"
                     value={s.value}
                     onChange={(e) => updateSplit(i, e.target.value)}
-                    placeholder={splitType === 'percentage' ? '%' : 'MX$'}
+                    placeholder={splitType === 'percentage' ? '%' : selectedCurrency + '$'}
                     className="flex-1 border border-slate-200 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 outline-none text-sm focus-ring"
                   />
                 </div>
