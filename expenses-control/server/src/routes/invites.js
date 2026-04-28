@@ -4,9 +4,9 @@ const db = require('../db');
 const auth = require('../middleware/auth');
 const crypto = require('crypto');
 
-// Generate a random 8-character alphanumeric token
+// Generate a random token with high entropy (32 bytes = 43 base64url chars)
 function generateToken() {
-  return crypto.randomBytes(6).toString('base64url').slice(0, 8).toUpperCase();
+  return crypto.randomBytes(32).toString('base64url');
 }
 
 router.use(auth);

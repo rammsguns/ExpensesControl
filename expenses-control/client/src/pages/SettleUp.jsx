@@ -8,6 +8,7 @@ import Navbar from '../components/Navbar';
 import BottomNav from '../components/BottomNav';
 import PageTransition from '../components/PageTransition';
 import { toast } from 'react-hot-toast';
+import { hapticMedium, hapticSuccess, hapticError } from '../utils/haptics';
 import { ArrowLeft, Home, Handshake, Receipt, CheckCircle } from 'lucide-react';
 
 export default function SettleUp() {
@@ -49,6 +50,7 @@ export default function SettleUp() {
     e.preventDefault();
     setError('');
     setLoading(true);
+    hapticMedium();
     try {
       await api.post('/settlements', {
         groupId: parseInt(groupId),
@@ -56,6 +58,7 @@ export default function SettleUp() {
         toUserId: parseInt(toUserId),
         amount: parseFloat(settleAmount),
       });
+      hapticSuccess();
       setFromUserId('');
       setToUserId('');
       setSettleAmount('');
@@ -64,6 +67,7 @@ export default function SettleUp() {
       qc.invalidateQueries({ queryKey: ['settlementPlan', groupId] });
       qc.invalidateQueries({ queryKey: ['balances', groupId] });
     } catch (err) {
+      hapticError();
       setError(err.response?.data?.error || 'Failed to record settlement');
       toast.error(t('toast_error_generic'));
     }
@@ -76,10 +80,10 @@ export default function SettleUp() {
       <PageTransition>
       <div className="max-w-lg mx-auto px-4 py-6">
         <div className="flex items-center gap-3 mb-4">
-          <button onClick={() => navigate(`/group/${groupId}`)} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold min-h-[44px] min-w-[44px] focus-ring" aria-label="Go back">
+          <button onClick={() => { hapticMedium(); navigate(`/group/${groupId}`); }} className="flex items-center gap-1 text-indigo-600 text-2xl font-semibold min-h-[44px] min-w-[44px] focus-ring" aria-label="Go back">
             <ArrowLeft size={24} /> {t('dashboard')}
           </button>
-          <button onClick={() => navigate('/')} className="text-slate-400 hover:text-slate-600 text-2xl min-h-[44px] min-w-[44px] focus-ring" aria-label="Home">
+          <button onClick={() => { hapticMedium(); navigate('/'); }} className="text-slate-400 hover:text-slate-600 text-2xl min-h-[44px] min-w-[44px] focus-ring" aria-label="Home">
             <Home size={24} />
           </button>
         </div>

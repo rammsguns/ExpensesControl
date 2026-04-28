@@ -314,12 +314,15 @@ router.get('/:id', auth, async (req, res) => {
     const expense = await db('expenses').where({ id: req.params.id }).first();
     if (!expense) return res.status(404).json({ error: 'Expense not found' });
 
-    // Verify membership
-    const membership = await db('group_members')
-      .where({ group_id: expense.group_id, user_id: req.user.id })
+    // Verify the requesting user is the payer OR in the splits
+    const isPayer = expense.paid_by === req.user.id;
+    const split = await db('expense_splits')
+      .where({ expense_id: expense.id, user_id: req.user.id })
       .first();
-    if (!membership) {
-      return res.status(403).json({ error: 'Forbidden: Not a member of this group' });
+    const isInSplits = !!split;
+
+    if (!isPayer && !isInSplits) {
+      return res.status(403).json({ error: 'Forbidden: You are not the payer or part of the splits for this expense' });
     }
 
     const splits = await db('expense_splits')

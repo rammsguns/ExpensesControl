@@ -7,6 +7,7 @@ import BottomNav from '../components/BottomNav';
 import { LogOut, Crown, Zap, Infinity, CheckCircle, ChevronDown, Star, Bell, Share2, Fingerprint, Trash2 } from 'lucide-react';
 import api from '../api';
 import { toast } from 'react-hot-toast';
+import { hapticLight } from '../utils/haptics';
 
 export default function Account() {
   const { t, language } = useTranslation();
@@ -189,11 +190,14 @@ export default function Account() {
 
   const handleChangeCurrency = async () => {
     setChangingCurrency(true);
+    hapticMedium();
     try {
       await api.put('/auth/currency', { currency: newCurrency });
+      hapticSuccess();
       toast.success(language === 'es' ? 'Moneda actualizada' : 'Currency updated');
       await refreshUser();
     } catch (err) {
+      hapticError();
       toast.error(err.response?.data?.error || 'Failed to update currency');
     } finally {
       setChangingCurrency(false);
@@ -361,7 +365,10 @@ export default function Account() {
             <div className="relative">
               <select
                 value={newCurrency}
-                onChange={(e) => setNewCurrency(e.target.value)}
+                onChange={(e) => {
+                hapticLight();
+                setNewCurrency(e.target.value);
+              }}
                 className="w-full border border-slate-200 rounded-lg px-3 py-2.5 pr-10 text-base appearance-none bg-white focus:ring-2 focus:ring-indigo-500 outline-none min-h-[44px]"
               >
                 {currencies.map((c) => (

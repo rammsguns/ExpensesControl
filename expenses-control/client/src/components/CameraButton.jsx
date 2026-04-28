@@ -22,7 +22,7 @@ export default function CameraButton({ expenseId, onUpload }) {
     formData.append('receipt', file);
 
     try {
-      const res = await fetch(`/api/expenses/${expenseId}/receipt`, {
+      const res = await fetch(`/api/receipts/${expenseId}/receipt`, {
         method: 'POST',
         body: formData,
         credentials: 'include',

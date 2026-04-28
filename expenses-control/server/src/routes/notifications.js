@@ -10,7 +10,7 @@ const vapidKeys = {
   privateKey: process.env.VAPID_PRIVATE_KEY,
 };
 webpush.setVapidDetails(
-  'mailto:admin@expensescontrol.local',
+  'mailto:' + (process.env.VAPID_CONTACT_EMAIL || 'admin@expensescontrol.local'),
   vapidKeys.publicKey,
   vapidKeys.privateKey,
 );
@@ -33,6 +33,10 @@ router.post('/subscribe', auth, async (req, res) => {
     const existing = await db('push_subscriptions').where({ endpoint }).first();
 
     if (existing) {
+      // Verify the subscription belongs to this user
+      if (existing.user_id !== req.user.id) {
+        return res.status(403).json({ error: 'Forbidden: This subscription does not belong to you' });
+      }
       await db('push_subscriptions')
         .where({ endpoint })
         .update({ user_id: req.user.id, p256dh, auth: authToken, created_at: new Date() });

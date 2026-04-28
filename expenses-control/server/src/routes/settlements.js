@@ -13,7 +13,8 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  if (typeof amount !== 'number' || amount <= 0) {
+  const parsedAmount = parseFloat(amount);
+  if (isNaN(parsedAmount) || parsedAmount <= 0) {
     return res.status(400).json({ error: 'Amount must be a positive number' });
   }
 
@@ -43,7 +44,7 @@ router.post('/', async (req, res) => {
       group_id: groupId,
       from_user_id: fromUserId,
       to_user_id: toUserId,
-      amount
+      amount: parsedAmount
     });
     res.status(201).json({ id, message: 'Settlement recorded' });
   } catch (err) {

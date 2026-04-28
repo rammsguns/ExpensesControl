@@ -67,9 +67,11 @@ export default function GroupDetail() {
 
   const generateInvite = async () => {
     setSharing(true);
+    hapticMedium();
     try {
       const res = await api.post(`/invites/${id}`);
       setInviteLink(res.data.inviteLink);
+      hapticSuccess();
       if (typeof t === 'function') {
         toast.success(t('invite_created') || (language === 'es' ? 'Invitación creada' : 'Invite created'));
       } else {
@@ -206,9 +208,13 @@ export default function GroupDetail() {
               {
                 action: async () => {
                   if (inviteLink) {
+                    hapticMedium();
                     const { shareGroup } = await import('../utils/share');
                     const result = await shareGroup(group, inviteLink, t, language);
-                    if (result.copied) toast.success(language === 'es' ? 'Enlace copiado al portapapeles' : 'Link copied to clipboard');
+                    if (result.copied) {
+                      hapticSuccess();
+                      toast.success(language === 'es' ? 'Enlace copiado al portapapeles' : 'Link copied to clipboard');
+                    }
                     return;
                   }
                   await generateInvite();
@@ -335,9 +341,13 @@ export default function GroupDetail() {
                           }
                         }}
                         onShare={async (expense) => {
+                          hapticMedium();
                           const { shareExpense } = await import('../utils/share');
                           const result = await shareExpense(expense, t, language);
-                          if (result.copied) toast.success(t('copied_to_clipboard') || (language === 'es' ? 'Copiado al portapapeles' : 'Copied to clipboard'));
+                          if (result.copied) {
+                            hapticSuccess();
+                            toast.success(t('copied_to_clipboard') || (language === 'es' ? 'Copiado al portapapeles' : 'Copied to clipboard'));
+                          }
                         }}
                       />
                     ))}

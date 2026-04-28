@@ -3,9 +3,11 @@ require('dotenv').config({ path: path.join(__dirname, '..', '.env') });
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const crypto = require('crypto');
 const db = require('./db');
+const auth = require('./middleware/auth');
 const authRoutes = require('./routes/auth');
 const groupRoutes = require('./routes/groups');
 const expenseRoutes = require('./routes/expenses');
@@ -33,6 +35,7 @@ const PORT = process.env.PORT || 3001;
 
 // CORS: restrict to configured origin(s)
 const corsOrigins = process.env.CORS_ORIGIN || 'http://localhost:5173';
+app.use(helmet());
 app.use(cors({
   origin: corsOrigins.split(',').map(o => o.trim()),
   credentials: true,
@@ -99,8 +102,8 @@ app.use('/api/settlements', settlementRoutes);
 app.use('/api/balances', balanceRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/invites', inviteRoutes);
-app.use('/api/expenses', receiptRoutes);
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+app.use('/api/receipts', receiptRoutes);
+app.use('/uploads', auth, express.static(path.join(__dirname, '../uploads')));
 
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
